@@ -6,8 +6,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic")
 
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(BOX2D_BUILD_TESTBED OFF)
-set(BOX2D_BUILD_UNIT_TESTS OFF)
+option(BOX2D_BUILD_TESTBED OFF)
+option(BOX2D_BUILD_UNIT_TESTS OFF)
 
 include(FetchContent)
 
@@ -29,5 +29,21 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(raylib)
 
+FetchContent_Declare(
+    tomlplusplus
+    GIT_REPOSITORY https://github.com/marzer/tomlplusplus.git
+	GIT_SHALLOW TRUE
+    GIT_TAG v3.4.0
+)
+FetchContent_MakeAvailable(tomlplusplus)
+
+FetchContent_Declare(
+    cxxopts
+    GIT_REPOSITORY https://github.com/jarro2783/cxxopts.git
+	GIT_SHALLOW TRUE
+    GIT_TAG v3.2.0
+)
+FetchContent_MakeAvailable(cxxopts)
+
 add_executable(just src/just.cpp)
-target_link_libraries(just PRIVATE box2d raylib)
+target_link_libraries(just PRIVATE box2d raylib tomlplusplus::tomlplusplus cxxopts::cxxopts)
