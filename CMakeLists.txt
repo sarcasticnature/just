@@ -37,13 +37,13 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tomlplusplus)
 
-FetchContent_Declare(
-    cxxopts
-    GIT_REPOSITORY https://github.com/jarro2783/cxxopts.git
-	GIT_SHALLOW TRUE
-    GIT_TAG v3.2.0
-)
-FetchContent_MakeAvailable(cxxopts)
+#FetchContent_Declare(
+#    cxxopts
+#    GIT_REPOSITORY https://github.com/jarro2783/cxxopts.git
+#	GIT_SHALLOW TRUE
+#    GIT_TAG v3.2.0
+#)
+#FetchContent_MakeAvailable(cxxopts)
 
 add_executable(just src/just.cpp)
-target_link_libraries(just PRIVATE box2d raylib tomlplusplus::tomlplusplus cxxopts::cxxopts)
+target_link_libraries(just PRIVATE box2d raylib tomlplusplus::tomlplusplus)

@@ -1,0 +1,17 @@
+[world]
+height = 1000
+width = 1000
+scale = 5.0
+fps = 60
+
+[[obstacles]]
+color = "white"
+radius = 5.0
+x = 0.0
+y = 0.0
+
+[[agents]]
+color = "red"
+radius = 2.0
+x = 10.0
+y = 0.0
