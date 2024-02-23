@@ -48,8 +48,7 @@ int main(int argc, char** argv)
     b2FixtureDef agent_fixture_def;
     agent_fixture_def.shape = &agent_shape;
     agent_fixture_def.density = 1.0f;
-    b2Fixture* agent_fixture = agent_body->CreateFixture(&agent_fixture_def);
-    agent_fixture->SetFriction(0.5);
+    agent_body->CreateFixture(&agent_fixture_def);
 
     // Ground
     b2BodyDef ground_body_def;
@@ -61,8 +60,7 @@ int main(int argc, char** argv)
     ground_shape.SetTwoSided({-10.0f, 0.0f}, {10.0f, 0.0f});
     b2FixtureDef ground_fixture_def;
     ground_fixture_def.shape = &ground_shape;
-    b2Fixture* ground_fixture = ground_body->CreateFixture(&ground_fixture_def);
-    ground_fixture->SetFriction(0.5);
+    ground_body->CreateFixture(&ground_fixture_def);
 
     //float theta = 0.0;
     b2Vec2 pos;
