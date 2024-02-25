@@ -10,6 +10,12 @@ namespace just
 class HistogramGrid
 {
 public:
+    // Constants used by the alg
+    static constexpr uint8_t CV_MIN = 0;    // certainty value minimum
+    static constexpr uint8_t CV_MAX = 15;   // certainty value maximum
+    static constexpr uint8_t CV_INC = 3;    // certainty value increment magnitude
+    static constexpr uint8_t CV_DEC = 1;    // certainty value decrement magnidude
+
     // ctor/dtor
     explicit HistogramGrid(unsigned width, unsigned height);
     ~HistogramGrid() { delete data_; }
@@ -23,6 +29,10 @@ public:
 
     // Checks if given cartesian coordinates are within possible values of the array
     inline bool within_bounds(int x, int y) const;
+
+    // Ingest information from a new percept ('sensor' distance measurment) to the grid
+    // returns false if the percept couldn't be processed, true otherwise
+    bool add_percept(int x0, int y0, float theta, float distance);
 
 private:
     // array data/info
@@ -41,6 +51,9 @@ private:
     // for multiple array accesses.
     uint8_t& unsafe_at(int x, int y);
     const uint8_t& unsafe_at(int x, int y) const;
+
+    // clamp cell certainty values between the specified min and max
+    inline uint8_t clamp_cell(uint8_t cv);
 };
 
 } // namespace just

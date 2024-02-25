@@ -1,3 +1,6 @@
+#include <cmath>
+#include <algorithm>
+
 #include "doctest/doctest.h"
 
 #include "just/world_model.hpp"
@@ -33,6 +36,61 @@ HistogramGrid::HistogramGrid(unsigned width, unsigned height)
     y_min_ = height % 2 ? -y_max_ : -(y_max_ - 1);
 }
 
+bool HistogramGrid::add_percept(int x0, int y0, float theta, float distance)
+{
+    if (!within_bounds(x0, y0)) {
+        return false;
+    }
+
+    int x1 = std::round(distance * std::cos(theta));
+    int y1 = std::round(distance * std::sin(theta));
+
+    // TODO: double bounds checks... not sure it really matters though
+    if (!within_bounds(x1, y1)) {
+        float m = std::tan(theta);
+        float b = y0 - m * x0;
+
+        if (x1 < x_min_ || x1 > x_max_) {
+            x1 = std::clamp(x1, x_min_, x_max_);
+            y1 = std::trunc(m * (double)x1 + b);
+        }
+
+        // Note y may still be out of bounds even after clipping x, so this should not be an if else
+        if (y1 < y_min_ || y1 > y_max_) {
+            y1 = std::clamp(y1, y_min_, y_max_);
+            x1 = std::trunc(((double)y1 - b) / m);
+        }
+    }
+
+    // Bresenham's line algorithm
+    // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm#All_cases
+    int dx = std::abs(x1 - x0);
+    int sx = x0 < x1 ? 1 : -1;
+    int dy = std::abs(y1 - y0);
+    int sy = y0 < y1 ? 1 : -1;
+    int err = dx + dy;
+    int e2;
+
+    // TODO: I think the cell acess could be cleaned up with a better/replacent clamp_cell
+    while (x0 != x1 && y0 != y1) {
+        uint8_t& cell = unsafe_at(x0, y0);
+        cell = clamp_cell(cell - CV_DEC);
+        e2 = 2 * err;
+        if (e2 >= dy) {
+            err = err + dy;
+            x0 += sx;
+        }
+        if (e2 <= dx) {
+            err = err + dx;
+            y0 += sy;
+        }
+    }
+    uint8_t& cell = unsafe_at(x1, y1);
+    cell = clamp_cell(cell + CV_INC);
+
+    return false;
+}
+
 std::optional<uint8_t> HistogramGrid::at(int x, int y) const
 {
     if (!within_bounds(x, y)) {
@@ -60,6 +118,11 @@ const uint8_t& HistogramGrid::unsafe_at(int x, int y) const
     unsigned row = y - y_min_;
 
     return data_[row * width_ + col];
+}
+
+uint8_t HistogramGrid::clamp_cell(uint8_t cv)
+{
+    return std::clamp(cv, CV_MIN, CV_MAX);
 }
 
 } // namespace just
@@ -111,7 +174,7 @@ TEST_CASE("HistogramGrid 4x4") {
     CHECK(grid.at(-2,-2) == std::nullopt);
 }
 
-TEST_CASE("Histogram Grid 10000x10001") {
+TEST_CASE("HistogramGrid 10000x10001") {
     just::HistogramGrid grid(10000, 10001);
 
     CHECK(grid.at(0,0) == 0);
@@ -120,4 +183,15 @@ TEST_CASE("Histogram Grid 10000x10001") {
 
     CHECK(grid.at(1000000,1000000) == std::nullopt);
     CHECK(grid.at(-1000000,-1000000) == std::nullopt);
+}
+
+TEST_CASE("HistogramGrid.add_percept") {
+    just::HistogramGrid grid(10, 10);
+    grid.add_percept(0, 0, 0, 3);
+
+    CHECK(grid.at(0,0) == 0);
+    CHECK(grid.at(1,0) == 0);
+    CHECK(grid.at(2,0) == 0);
+    CHECK(grid.at(3,0) == 3);
+    CHECK(grid.at(4,0) == 0);
 }
