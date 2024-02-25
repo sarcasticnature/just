@@ -52,8 +52,8 @@ private:
     uint8_t& unsafe_at(int x, int y);
     const uint8_t& unsafe_at(int x, int y) const;
 
-    // clamp cell certainty values between the specified min and max
-    inline uint8_t clamp_cell(uint8_t cv);
+    inline void increment_cell(int x, int y);
+    inline void decrement_cell(int x, int y);
 };
 
 } // namespace just

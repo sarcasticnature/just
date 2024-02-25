@@ -66,15 +66,13 @@ bool HistogramGrid::add_percept(int x0, int y0, float theta, float distance)
     // https://en.wikipedia.org/wiki/Bresenham%27s_line_algorithm#All_cases
     int dx = std::abs(x1 - x0);
     int sx = x0 < x1 ? 1 : -1;
-    int dy = std::abs(y1 - y0);
+    int dy = -std::abs(y1 - y0);
     int sy = y0 < y1 ? 1 : -1;
     int err = dx + dy;
     int e2;
 
-    // TODO: I think the cell acess could be cleaned up with a better/replacent clamp_cell
-    while (x0 != x1 && y0 != y1) {
-        uint8_t& cell = unsafe_at(x0, y0);
-        cell = clamp_cell(cell - CV_DEC);
+    while (x0 != x1 || y0 != y1) {
+        decrement_cell(x0, y0);
         e2 = 2 * err;
         if (e2 >= dy) {
             err = err + dy;
@@ -85,10 +83,9 @@ bool HistogramGrid::add_percept(int x0, int y0, float theta, float distance)
             y0 += sy;
         }
     }
-    uint8_t& cell = unsafe_at(x1, y1);
-    cell = clamp_cell(cell + CV_INC);
+    increment_cell(x0, y0);
 
-    return false;
+    return true;
 }
 
 std::optional<uint8_t> HistogramGrid::at(int x, int y) const
@@ -120,9 +117,20 @@ const uint8_t& HistogramGrid::unsafe_at(int x, int y) const
     return data_[row * width_ + col];
 }
 
-uint8_t HistogramGrid::clamp_cell(uint8_t cv)
+void HistogramGrid::increment_cell(int x, int y)
 {
-    return std::clamp(cv, CV_MIN, CV_MAX);
+    uint8_t& cell = unsafe_at(x, y);
+    cell = std::clamp(static_cast<uint8_t>(cell + CV_INC), CV_MIN, CV_MAX);
+}
+
+void HistogramGrid::decrement_cell(int x, int y)
+{
+    uint8_t& cell = unsafe_at(x, y);
+    if (static_cast<int>(cell) - static_cast<int>(CV_DEC) < 0) {
+        cell = 0;
+    } else {
+        cell -= CV_DEC;
+    }
 }
 
 } // namespace just
@@ -189,14 +197,14 @@ TEST_CASE("HistogramGrid.add_percept") {
     SUBCASE("Add percepts until max CV") {
         just::HistogramGrid grid(10, 10);
 
+        REQUIRE(grid.at(0,0).value() == 0);
         // Load up a cell to max CV
         for (int i = 1; i <= 5; ++i) {
             grid.add_percept(0, 0, 0.0, 3.0);
-
             REQUIRE(grid.at(0,0).value() == 0);
             REQUIRE(grid.at(1,0).value() == 0);
             REQUIRE(grid.at(2,0).value() == 0);
-            REQUIRE(grid.at(3,0).value() == 3 * i);
+            REQUIRE(grid.at(3,0).value() == just::HistogramGrid::CV_INC * i);
             REQUIRE(grid.at(4,0).value() == 0);
         }
 
@@ -206,12 +214,16 @@ TEST_CASE("HistogramGrid.add_percept") {
         REQUIRE(grid.at(0,0).value() == 0);
         REQUIRE(grid.at(1,0).value() == 0);
         REQUIRE(grid.at(2,0).value() == 0);
-        REQUIRE(grid.at(3,0).value() == 15);
+        REQUIRE(grid.at(3,0).value() == just::HistogramGrid::CV_MAX);
         REQUIRE(grid.at(4,0).value() == 0);
     }
 
     SUBCASE("Add percepts until min CV") {
         just::HistogramGrid grid(10, 10);
+
+        // TODO: use the CV constants defined in the class instead of hardcoding values
+        // Note that I am way too lazy to fix right now, esp. given I have no intention of
+        // changing them anytime soon
 
         // Load up the grid w/ a max CV cell
         for (int i = 0; i < 5; ++i) {
