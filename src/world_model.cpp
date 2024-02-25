@@ -143,17 +143,17 @@ TEST_CASE("HistogramGrid.within_bounds()") {
 TEST_CASE("HistogramGrid 3x3") {
     just::HistogramGrid grid(3, 3);
 
-    CHECK(grid.at(-1,1) == 0);
-    CHECK(grid.at(0,1) == 0);
-    CHECK(grid.at(1,1) == 0);
+    CHECK(grid.at(-1,1).value() == 0);
+    CHECK(grid.at(0,1).value() == 0);
+    CHECK(grid.at(1,1).value() == 0);
 
-    CHECK(grid.at(-1,0) == 0);
-    CHECK(grid.at(0,0) == 0);
-    CHECK(grid.at(1,0) == 0);
+    CHECK(grid.at(-1,0).value() == 0);
+    CHECK(grid.at(0,0).value() == 0);
+    CHECK(grid.at(1,0).value() == 0);
 
-    CHECK(grid.at(-1,-1) == 0);
-    CHECK(grid.at(0,-1) == 0);
-    CHECK(grid.at(1,-1) == 0);
+    CHECK(grid.at(-1,-1).value() == 0);
+    CHECK(grid.at(0,-1).value() == 0);
+    CHECK(grid.at(1,-1).value() == 0);
 
     CHECK(grid.at(2,2) == std::nullopt);
     CHECK(grid.at(2,0) == std::nullopt);
@@ -166,9 +166,9 @@ TEST_CASE("HistogramGrid 3x3") {
 TEST_CASE("HistogramGrid 4x4") {
     just::HistogramGrid grid(4, 4);
 
-    CHECK(grid.at(0,0) == 0);
-    CHECK(grid.at(2,2) == 0);
-    CHECK(grid.at(-1,-1) == 0);
+    CHECK(grid.at(0,0).value() == 0);
+    CHECK(grid.at(2,2).value() == 0);
+    CHECK(grid.at(-1,-1).value() == 0);
 
     CHECK(grid.at(3,3) == std::nullopt);
     CHECK(grid.at(-2,-2) == std::nullopt);
@@ -177,21 +177,72 @@ TEST_CASE("HistogramGrid 4x4") {
 TEST_CASE("HistogramGrid 10000x10001") {
     just::HistogramGrid grid(10000, 10001);
 
-    CHECK(grid.at(0,0) == 0);
-    CHECK(grid.at(5000,5000) == 0);
-    CHECK(grid.at(-4999,-5000) == 0);
+    CHECK(grid.at(0,0).value() == 0);
+    CHECK(grid.at(5000,5000).value() == 0);
+    CHECK(grid.at(-4999,-5000).value() == 0);
 
     CHECK(grid.at(1000000,1000000) == std::nullopt);
     CHECK(grid.at(-1000000,-1000000) == std::nullopt);
 }
 
 TEST_CASE("HistogramGrid.add_percept") {
-    just::HistogramGrid grid(10, 10);
-    grid.add_percept(0, 0, 0, 3);
+    SUBCASE("Add percepts until max CV") {
+        just::HistogramGrid grid(10, 10);
 
-    CHECK(grid.at(0,0) == 0);
-    CHECK(grid.at(1,0) == 0);
-    CHECK(grid.at(2,0) == 0);
-    CHECK(grid.at(3,0) == 3);
-    CHECK(grid.at(4,0) == 0);
+        // Load up a cell to max CV
+        for (int i = 1; i <= 5; ++i) {
+            grid.add_percept(0, 0, 0.0, 3.0);
+
+            REQUIRE(grid.at(0,0).value() == 0);
+            REQUIRE(grid.at(1,0).value() == 0);
+            REQUIRE(grid.at(2,0).value() == 0);
+            REQUIRE(grid.at(3,0).value() == 3 * i);
+            REQUIRE(grid.at(4,0).value() == 0);
+        }
+
+        // Verify that the cell doesn't go over max CV
+        grid.add_percept(0, 0, 0.0, 3.0);
+
+        REQUIRE(grid.at(0,0).value() == 0);
+        REQUIRE(grid.at(1,0).value() == 0);
+        REQUIRE(grid.at(2,0).value() == 0);
+        REQUIRE(grid.at(3,0).value() == 15);
+        REQUIRE(grid.at(4,0).value() == 0);
+    }
+
+    SUBCASE("Add percepts until min CV") {
+        just::HistogramGrid grid(10, 10);
+
+        // Load up the grid w/ a max CV cell
+        for (int i = 0; i < 5; ++i) {
+            grid.add_percept(0, 0, 0.0, 3.0);
+        }
+        // Add another cell (to be decremented shortly)
+        grid.add_percept(0, 0, 0.0, 2.0);
+
+        // Add a percept further away to decrement the other cells
+        grid.add_percept(0, 0, 0.0, 5.0);
+
+        REQUIRE(grid.at(2,0).value() == 2);
+        REQUIRE(grid.at(3,0).value() == 14);
+        REQUIRE(grid.at(5,0).value() == 3);
+
+        grid.add_percept(0, 0, 0.0, 5.0);
+
+        REQUIRE(grid.at(2,0).value() == 1);
+        REQUIRE(grid.at(3,0).value() == 13);
+        REQUIRE(grid.at(5,0).value() == 6);
+
+        grid.add_percept(0, 0, 0.0, 5.0);
+
+        REQUIRE(grid.at(2,0).value() == 0);
+        REQUIRE(grid.at(3,0).value() == 12);
+        REQUIRE(grid.at(5,0).value() == 9);
+
+        grid.add_percept(0, 0, 0.0, 5.0);
+
+        REQUIRE(grid.at(2,0).value() == 0);
+        REQUIRE(grid.at(3,0).value() == 11);
+        REQUIRE(grid.at(5,0).value() == 12);
+    }
 }
