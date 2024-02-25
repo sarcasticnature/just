@@ -20,8 +20,9 @@ public:
     explicit HistogramGrid(unsigned width, unsigned height);
     ~HistogramGrid() { delete data_; }
 
-    // Access to the underlying array.  Not sure what this would be used for as of yet (testing?)
-    //const uint8_t* data() const { return data_; };
+    // Access to the underlying array.
+    // This is mostly useful for visualization using raylib
+    const uint8_t* data() const { return data_; };
 
     // Public facing, bounds checked element access (cartesian coords).
     // Returns nullopt if the requested x/y is out of bounds.
