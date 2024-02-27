@@ -14,7 +14,7 @@ public:
     static constexpr uint8_t CV_MIN = 0;    // certainty value minimum
     static constexpr uint8_t CV_MAX = 15;   // certainty value maximum
     static constexpr uint8_t CV_INC = 3;    // certainty value increment magnitude
-    static constexpr uint8_t CV_DEC = 1;    // certainty value decrement magnidude
+    static constexpr uint8_t CV_DEC = 1;    // certainty value decrement magnitude
 
     // ctor/dtor
     explicit HistogramGrid(unsigned width, unsigned height);

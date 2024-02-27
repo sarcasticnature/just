@@ -76,11 +76,14 @@ bool HistogramGrid::add_percept(int x0, int y0, float theta, float distance)
         e2 = 2 * err;
         if (e2 >= dy) {
             err = err + dy;
-            x0 += sx;
+            // Note: clamping this value as there is an edge case where it could go over max
+            // when the end point is at the limit(s) of the grid
+            x0 = std::clamp(x0 + sx, x_min_, x_max_);
         }
         if (e2 <= dx) {
             err = err + dx;
-            y0 += sy;
+            // Same as above
+            y0 = std::clamp(y0 + sy, y_min_, y_max_);
         }
     }
     increment_cell(x0, y0);
@@ -194,10 +197,84 @@ TEST_CASE("HistogramGrid 10000x10001") {
 }
 
 TEST_CASE("HistogramGrid.add_percept") {
+    SUBCASE("Add percept cardinal directions") {
+        just::HistogramGrid grid(10,10);
+
+        REQUIRE(grid.add_percept(0, 0, 0.0, 3.0));
+        CHECK(grid.at(3,0).value() == just::HistogramGrid::CV_INC);
+
+        REQUIRE(grid.add_percept(0, 0, M_PI / 4, 3.0));
+        CHECK(grid.at(2,2).value() == just::HistogramGrid::CV_INC);
+
+        REQUIRE(grid.add_percept(0, 0, M_PI / 2, 3.0));
+        CHECK(grid.at(0,3).value() == just::HistogramGrid::CV_INC);
+
+        REQUIRE(grid.add_percept(0, 0, 3 * M_PI / 4, 3.0));
+        CHECK(grid.at(-2,2).value() == just::HistogramGrid::CV_INC);
+
+        REQUIRE(grid.add_percept(0, 0, M_PI, 3.0));
+        CHECK(grid.at(-3,0).value() == just::HistogramGrid::CV_INC);
+
+        REQUIRE(grid.add_percept(0, 0, -3 * M_PI / 4, 3.0));
+        CHECK(grid.at(-2,-2).value() == just::HistogramGrid::CV_INC);
+
+        REQUIRE(grid.add_percept(0, 0, -M_PI / 2, 3.0));
+        CHECK(grid.at(0,-3).value() == just::HistogramGrid::CV_INC);
+
+        REQUIRE(grid.add_percept(0, 0, -M_PI / 4, 3.0));
+        CHECK(grid.at(2,-2).value() == just::HistogramGrid::CV_INC);
+    }
+
+    SUBCASE("Add percept odd angles") {
+        just::HistogramGrid grid(10,10);
+
+        // Note: hand calculations were performed to obtain the 'correct' cell coordinates
+        // for these cases
+        REQUIRE(grid.add_percept(0, 0, M_PI / 12, 4.0));
+        CHECK(grid.at(4,1).value() == just::HistogramGrid::CV_INC);
+
+        REQUIRE(grid.add_percept(0, 0, M_PI / 6, 4.0));
+        CHECK(grid.at(3,2).value() == just::HistogramGrid::CV_INC);
+
+        // Now we verify that the ray is following the correct path (in addition to its destination)
+        // First, we will breadcrumb cells along the path (working backwards)
+
+        // To increase the CV of the cell at (1,2), we need a magnitude of sqrt(5)
+        // and a theta of acos(1/sqrt(5))
+        // I solved for this analytically, but the math is a bit too long to type out here.
+        // Was it necessary to find the exact values?
+        // No, an approximation/emperically determined value would have been fine... but /shrug
+        REQUIRE(grid.add_percept(0, 0, 1.107, 2.236));
+        REQUIRE(grid.at(1,2).value() == just::HistogramGrid::CV_INC);
+
+        // To increase the CV of the cell at (1,1), we use the unit circle to find
+        // a magnitue of 2/sqrt(2) and a theta of pi/4
+        REQUIRE(grid.add_percept(0, 0, M_PI / 4, 1.414));
+        REQUIRE(grid.at(1,1).value()== just::HistogramGrid::CV_INC);
+
+        // Add the ray we actually want to check
+        REQUIRE(grid.add_percept(0, 0, M_PI / 3, 4.0));
+        REQUIRE(grid.at(2,3).value() == just::HistogramGrid::CV_INC);
+        // The other two cells should have been decremented, if the ray followed the 'correct'
+        // path
+        REQUIRE(grid.at(1,2).value() == just::HistogramGrid::CV_INC - 1);
+        REQUIRE(grid.at(1,1).value() == just::HistogramGrid::CV_INC - 1);
+
+        // Verify that no other cells were harmed in the making of this film
+        REQUIRE(grid.at(0,0).value() == 0);
+        REQUIRE(grid.at(0,1).value() == 0);
+        REQUIRE(grid.at(0,2).value() == 0);
+        REQUIRE(grid.at(1,0).value() == 0);
+        REQUIRE(grid.at(1,3).value() == 0);
+        REQUIRE(grid.at(2,1).value() == 0);
+        REQUIRE(grid.at(2,2).value() == 0);
+        REQUIRE(grid.at(3,0).value() == 0);
+        REQUIRE(grid.at(3,1).value() == 0);
+    }
+
     SUBCASE("Add percepts until max CV") {
         just::HistogramGrid grid(10, 10);
 
-        REQUIRE(grid.at(0,0).value() == 0);
         // Load up a cell to max CV
         for (int i = 1; i <= 5; ++i) {
             grid.add_percept(0, 0, 0.0, 3.0);
