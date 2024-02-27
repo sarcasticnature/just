@@ -76,6 +76,8 @@ add_executable(grid_demo src/grid_demo.cpp)
 target_link_libraries(grid_demo PRIVATE just ${just_deps})
 
 if(JUST_BUILD_TESTS)
+    enable_testing()
     add_executable(tests test/doctest_main.cpp ${just_srcs})
     target_link_libraries(tests ${just_deps})
+    add_test(NAME doctest COMMAND tests)
 endif()
