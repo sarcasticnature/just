@@ -1,5 +1,6 @@
 # just
 Jake's Ugly Simulation Testbed
+![tests](https://github.com/sarcasticnature/just/actions/workflows/tests.yml/badge.svg)
 
 ## What is just?
 just is (eventually going to be) an implementation of a robotics motion planning algorithm (possibly more than one), with an accompanying simulation environment and visualization(s) to boot.
