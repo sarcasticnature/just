@@ -3,6 +3,7 @@
 
 #include <cstdint>
 #include <optional>
+#include <array>
 
 namespace just
 {
@@ -36,6 +37,10 @@ public:
     // Ingest information from a new percept ('sensor' distance measurment) to the grid
     // returns false if the percept couldn't be processed, true otherwise
     bool add_percept(int x0, int y0, float theta, float distance);
+
+    // Get a subset of the grid
+    template <size_t W, size_t H>
+    std::optional<std::array<uint8_t, W * H>> subgrid(int x, int y) const;
 
 private:
     // array data/info
