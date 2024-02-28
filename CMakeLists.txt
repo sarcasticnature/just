@@ -56,6 +56,7 @@ include_directories(include)
 
 set(just_srcs
     src/world_model.cpp
+    src/sensor.cpp
 )
 
 set(just_deps

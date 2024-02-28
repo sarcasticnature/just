@@ -1,5 +1,6 @@
 # just
 Jake's Ugly Simulation Testbed
+
 ![tests](https://github.com/sarcasticnature/just/actions/workflows/tests.yml/badge.svg)
 
 ## What is just?
@@ -36,7 +37,7 @@ This is a _very_ coarse estimation of the roadmap and is subject to change:
 * [x] Create a basic demo of using box2d and raylib to simulate/visualize an """agent""" and its """environment""" (note the heavy quotes)
 * [x] Implement a Histogram Grid for mapping
 * [x] Implement adding perception data (percepts) to said grid (following the method described in the HIMM paper)
-* [ ] Create an idealistic 'sensor' that mimics a LIDAR/RADAR/Ultrasonic sensor array, for use in adding percepts to the grid
+* [x] Create an idealistic 'sensor' that mimics a LIDAR/RADAR/Ultrasonic sensor array, for use in adding percepts to the grid
 * [ ] Implement VFH
 * [ ] Create an 'agent' that
     * [ ] moves in the world
