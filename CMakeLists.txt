@@ -57,6 +57,7 @@ include_directories(include)
 set(just_srcs
     src/world_model.cpp
     src/sensor.cpp
+    src/agent.cpp
 )
 
 set(just_deps
@@ -75,6 +76,9 @@ target_link_libraries(demo PRIVATE just ${just_deps})
 
 add_executable(grid_demo src/grid_demo.cpp)
 target_link_libraries(grid_demo PRIVATE just ${just_deps})
+
+add_executable(agent_demo src/agent_demo.cpp)
+target_link_libraries(agent_demo PRIVATE just ${just_deps})
 
 if(JUST_BUILD_TESTS)
     enable_testing()

@@ -1,17 +1,38 @@
 [world]
 height = 1000
 width = 1000
-scale = 5.0
+scale = 10.0
 fps = 60
 
 [[obstacles]]
 color = "white"
-radius = 5.0
+shape = "box"
+width = 1.0
+height = 1.0
 x = 0.0
 y = 0.0
+theta = 0.0
 
 [[agents]]
+name = "tom"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 8, range = 5.0 }
 color = "red"
+shape = "circle"
 radius = 2.0
-x = 10.0
+x = 0.0
 y = 0.0
+theta = 0.0
+
+[[agents]]
+name = "jerry"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 8, range = 5.0 }
+color = "red"
+shape = "circle"
+radius = 2.0
+x = 0.0
+y = 10.0
+theta = 0.0

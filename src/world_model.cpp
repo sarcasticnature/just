@@ -367,22 +367,22 @@ TEST_CASE("HistogramGrid.subgrid") {
     grid.add_percept(0, 0, 0.0, 3.0);
 
     SUBCASE("Invalid subgrids") {
-        auto subgrid_opt_0 = grid.subgrid<100,100>(0,0);
+        auto subgrid_opt_0 = grid.subgrid<100,100>(0,0); // NOLINT (not sure why this is needed)
         REQUIRE(subgrid_opt_0 == std::nullopt);
 
-        auto subgrid_opt_1 = grid.subgrid<3,3>(10,10);
+        auto subgrid_opt_1 = grid.subgrid<3,3>(10,10); // NOLINT (not sure why this is needed)
         REQUIRE(subgrid_opt_1 == std::nullopt);
 
-        auto subgrid_opt_2 = grid.subgrid<3,3>(5,0);
+        auto subgrid_opt_2 = grid.subgrid<3,3>(5,0); // NOLINT (not sure why this is needed)
         REQUIRE(subgrid_opt_2 == std::nullopt);
 
-        auto subgrid_opt_3 = grid.subgrid<3,3>(-4,0);
+        auto subgrid_opt_3 = grid.subgrid<3,3>(-4,0); // NOLINT (not sure why this is needed)
         REQUIRE(subgrid_opt_3 == std::nullopt);
 
-        auto subgrid_opt_4 = grid.subgrid<3,3>(0,5);
+        auto subgrid_opt_4 = grid.subgrid<3,3>(0,5); // NOLINT (not sure why this is needed)
         REQUIRE(subgrid_opt_4 == std::nullopt);
 
-        auto subgrid_opt_5 = grid.subgrid<3,3>(0,-4);
+        auto subgrid_opt_5 = grid.subgrid<3,3>(0,-4); // NOLINT (not sure why this is needed)
         REQUIRE(subgrid_opt_5 == std::nullopt);
     }
 
@@ -390,7 +390,7 @@ TEST_CASE("HistogramGrid.subgrid") {
         auto subgrid_opt = grid.subgrid<3,3>(0,0);
         REQUIRE(subgrid_opt != std::nullopt);
 
-        auto subgrid = subgrid_opt.value();
+        auto subgrid = subgrid_opt.value(); // NOLINT (not sure why this is needed)
         REQUIRE(std::all_of(subgrid.begin(), subgrid.end(), [](uint8_t cv) { return cv == 0; }));
     }
 }

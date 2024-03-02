@@ -8,6 +8,12 @@
 namespace just
 {
 
+class SubGrid
+{
+public:
+
+};
+
 class HistogramGrid
 {
 public:
