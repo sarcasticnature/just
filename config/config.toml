@@ -4,14 +4,14 @@ width = 1000
 scale = 10.0
 fps = 60
 
-[[obstacles]]
-color = "white"
-shape = "box"
-width = 1.0
-height = 1.0
-x = 0.0
-y = 0.0
-theta = 0.0
+#[[obstacles]]
+#color = "white"
+#shape = "box"
+#width = 1.0
+#height = 1.0
+#x = 0.0
+#y = 0.0
+#theta = 0.0
 
 [[agents]]
 name = "tom"
@@ -21,7 +21,7 @@ sensor = { count = 8, range = 5.0 }
 color = "red"
 shape = "circle"
 radius = 2.0
-x = 0.0
+x = 5.0
 y = 0.0
 theta = 0.0
 
@@ -31,8 +31,9 @@ type = "vfh"
 grid = { width = 1000, height = 1000 }
 sensor = { count = 8, range = 5.0 }
 color = "red"
-shape = "circle"
-radius = 2.0
-x = 0.0
+shape = "box"
+width = 4.0
+height = 4.0
+x = 5.01
 y = 10.0
-theta = 0.0
+theta = 0.25

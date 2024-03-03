@@ -17,7 +17,7 @@ Agent::Agent(const toml::table& config, b2World* world)
     std::string_view shape = config["shape"].value_or("circle");
     if (shape == "circle") {
         b2CircleShape shape;
-        shape.m_radius = config["shape"].value_or(1.0);
+        shape.m_radius = config["radius"].value_or(1.0);
 
         b2FixtureDef fixture_def;
         fixture_def.shape = &shape;

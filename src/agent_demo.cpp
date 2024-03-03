@@ -12,21 +12,52 @@
 
 int main(int argc, char** argv)
 {
-    if (argc != 2) {
-        std::cerr << "Incorrect number of arguments specified. "
-                  << "A single argument with the path to a configuration file is required."
-                  << std::endl;
-        return 1;
-    }
+    static constexpr auto demo_config = R"([world]
+height = 1000
+width = 1000
+scale = 10.0
+fps = 60
+
+[[agents]]
+name = "tom"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 8, range = 5.0 }
+color = "red"
+shape = "circle"
+radius = 2.0
+x = 5.0
+y = 0.0
+theta = 0.0
+
+[[agents]]
+name = "jerry"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 8, range = 5.0 }
+color = "red"
+shape = "box"
+width = 4.0
+height = 4.0
+x = 5.01
+y = 10.0
+theta = 0.25
+    )";
 
     toml::table config;
 
-    try {
-        config = toml::parse_file(argv[1]);
-    } catch (const toml::parse_error& err) {
-        std::cerr << "Parsing the TOML config file failed with error: " << err << std::endl;
-        return 2;
+    if (argc == 2) {
+        try {
+            config = toml::parse_file(argv[1]);
+        } catch (const toml::parse_error& err) {
+            std::cerr << "Parsing the TOML config file failed with error: " << err << std::endl;
+            return 2;
+        }
+    } else {
+        config = toml::parse(demo_config);
     }
+
+
 
     std::cout << "TOML config is:\n\n" << config << std::endl;
     int width = config["world"]["width"].value_or(1000);
@@ -90,13 +121,29 @@ int main(int argc, char** argv)
 
 
         for (b2Body* body = world->GetBodyList(); body; body = body->GetNext()) {
-            if (body->GetFixtureList()->GetShape()->GetType() == b2Shape::Type::e_edge) {
-                continue;
-            }
+            auto shape = body->GetFixtureList()->GetShape();
+            auto type = shape->GetType();
+
             pos = body->GetPosition();
-            rot = -body->GetAngle();
+            rot = -body->GetAngle() * RAD2DEG;
             Vector2 screen_pos = {pos.x * scale + width / 2.0f, height / 2.0f - pos.y * scale};
-            DrawCircleV(screen_pos, 50.0, WHITE);   // TODO: make 50.0 a real thing
+
+            if (type == b2Shape::Type::e_circle) {
+                std::cout << "circle_pos: " << pos.x << ", " << pos.y << std::endl;
+                DrawCircleV(screen_pos, shape->m_radius * scale, WHITE);   // TODO: make 50.0 a real thing
+            } else if (type == b2Shape::Type::e_polygon) {
+                auto rectangle_shape = reinterpret_cast<b2PolygonShape*>(shape);
+                float half_width = std::abs(rectangle_shape->m_vertices[0].x);
+                float half_height = std::abs(rectangle_shape->m_vertices[0].y);
+                //Rectangle rectangle{(pos.x - half_width) * scale + width / 2.0f, (-pos.y - half_height) * scale + height / 2.0f, half_width * 2.0f * scale, half_height * 2.0f * scale};
+                Rectangle rectangle{screen_pos.x, screen_pos.y, half_width * 2.0f * scale, half_height * 2.0f * scale};
+
+                DrawRectanglePro(rectangle, {half_width * scale, half_height * scale}, rot, BLUE);
+                //DrawRectanglePro(rectangle, {0.0f, 0.0f}, rot, BLUE);
+                DrawRectangleRec({(pos.x - half_width) * scale + width / 2.0f, (-pos.y - half_height) * scale + height / 2.0f, half_width * 2.0f * scale, half_height * 2.0f * scale}, RED);
+                std::cout << "box_pos: " << pos.x << ", " << pos.y << std::endl;
+                std::cout << "box_rot: " << body->GetAngle() << std::endl;
+            }
         }
 
         //pos = agent_body->GetPosition();
