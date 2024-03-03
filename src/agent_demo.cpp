@@ -57,9 +57,8 @@ theta = 0.25
         config = toml::parse(demo_config);
     }
 
-
-
     std::cout << "TOML config is:\n\n" << config << std::endl;
+
     int width = config["world"]["width"].value_or(1000);
     int height = config["world"]["height"].value_or(1000);
     float scale = config["world"]["scale"].value_or(10.0);
@@ -67,7 +66,7 @@ theta = 0.25
     InitWindow(width, height, "just");
     SetTargetFPS(config["world"]["fps"].value_or(60));
 
-    b2World* world = new b2World({0.0, -10.0});
+    b2World* world = new b2World({0.0, 0.0});
 
     // Agent
     std::vector<std::unique_ptr<just::Agent>> agents;
@@ -79,6 +78,9 @@ theta = 0.25
                     agents.push_back(std::make_unique<just::VFHAgent>(agent_config, world));
                     success = true;
                     return;
+                } else if (type_opt.value() == "patrol") {
+                    agents.push_back(std::make_unique<just::PatrolAgent>(agent_config, world));
+                    success = true;
                 }
             }
             std::cout << "Agent type missing or invalid, skipping agent: "
@@ -120,7 +122,8 @@ theta = 0.25
         DrawText(txt, (width - txt_width) / 2.0, 0, 36, GRAY);
 
 
-        for (b2Body* body = world->GetBodyList(); body; body = body->GetNext()) {
+        for (auto it = agents.cbegin(); it != agents.cend(); ++it) {
+            const auto body = (*it)->get_body();
             auto shape = body->GetFixtureList()->GetShape();
             auto type = shape->GetType();
 
@@ -130,31 +133,20 @@ theta = 0.25
 
             if (type == b2Shape::Type::e_circle) {
                 std::cout << "circle_pos: " << pos.x << ", " << pos.y << std::endl;
-                DrawCircleV(screen_pos, shape->m_radius * scale, WHITE);   // TODO: make 50.0 a real thing
+                DrawCircleV(screen_pos, shape->m_radius * scale, WHITE);
             } else if (type == b2Shape::Type::e_polygon) {
-                auto rectangle_shape = reinterpret_cast<b2PolygonShape*>(shape);
+                auto rectangle_shape = reinterpret_cast<const b2PolygonShape*>(shape);
                 float half_width = std::abs(rectangle_shape->m_vertices[0].x);
                 float half_height = std::abs(rectangle_shape->m_vertices[0].y);
-                //Rectangle rectangle{(pos.x - half_width) * scale + width / 2.0f, (-pos.y - half_height) * scale + height / 2.0f, half_width * 2.0f * scale, half_height * 2.0f * scale};
                 Rectangle rectangle{screen_pos.x, screen_pos.y, half_width * 2.0f * scale, half_height * 2.0f * scale};
 
                 DrawRectanglePro(rectangle, {half_width * scale, half_height * scale}, rot, BLUE);
-                //DrawRectanglePro(rectangle, {0.0f, 0.0f}, rot, BLUE);
                 DrawRectangleRec({(pos.x - half_width) * scale + width / 2.0f, (-pos.y - half_height) * scale + height / 2.0f, half_width * 2.0f * scale, half_height * 2.0f * scale}, RED);
                 std::cout << "box_pos: " << pos.x << ", " << pos.y << std::endl;
                 std::cout << "box_rot: " << body->GetAngle() << std::endl;
             }
+            (*it)->step();
         }
-
-        //pos = agent_body->GetPosition();
-        //Vector2 agent_pos = {pos.x * 50.0f + width / 2.0f, height / 2.0f - pos.y * 50.0f};
-        //float agent_rot = -agent_body->GetAngle();
-        //Vector2 agent_dir = Vector2Scale(Vector2Rotate({0.0, -1.0}, agent_rot), 50.0 + 20.0);
-
-        //DrawCircleV(agent_pos, 50.0, WHITE);
-        //DrawPoly(Vector2Add(agent_pos, agent_dir), 3, 20.0, RAD2DEG * (agent_rot + M_PI / 6.0), RED);
-
-        //DrawLine(0, height / 2 + 250.0, width, height / 2 + 250.0, GRAY);
 
         EndDrawing();
     }

@@ -40,8 +40,8 @@ This is a _very_ coarse estimation of the roadmap and is subject to change:
 * [x] Create an idealistic 'sensor' that mimics a LIDAR/RADAR/Ultrasonic sensor array, for use in adding percepts to the grid
 * [ ] Implement VFH
 * [ ] Create an 'agent' that
-    * [ ] moves in the world
-    * [ ] has a perception 'sensor'
+    * [x] moves in the world
+    * [x] has a perception 'sensor'
     * [ ] updates a histogram grid
     * [ ] utilizes VFH to control its motion
     * [ ] can be visualized

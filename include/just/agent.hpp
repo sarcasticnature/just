@@ -18,15 +18,30 @@ public:
 
     virtual void step() = 0;
 
+    const b2Body* get_body() { return body_; }
+
 protected:
     b2Body* body_;
+};
+
+class PatrolAgent : public Agent
+{
+public:
+    PatrolAgent(const toml::table& config, b2World* world);
+
+    void step() override;
+private:
+    b2Vec2 a_;
+    b2Vec2 b_;
+    float tolerance_;
+    float speed_;
+    bool reverse_{false};
 };
 
 class VFHAgent : public Agent
 {
 public:
     VFHAgent(const toml::table& config, b2World* world);
-    ~VFHAgent() override {}
 
     void step() override;
 

@@ -30,7 +30,7 @@ public:
     // Access to the underlying array and it's dimensions
     // This is mostly useful for visualization(s) using raylib
     const uint8_t* data() const { return data_; };
-    unsigned witdth() const { return width_; };
+    unsigned width() const { return width_; };
     unsigned height() const { return height_; };
 
     // Public facing, bounds checked element access (cartesian coords).

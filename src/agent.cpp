@@ -43,6 +43,42 @@ Agent::~Agent()
     world->DestroyBody(body_);
 }
 
+PatrolAgent::PatrolAgent(const toml::table& config, b2World* world)
+    : Agent(config, world)
+{
+    a_ = {config["x"].value_or(0.0f), config["y"].value_or(0.0f)};
+    b_ = {config["waypoint"]["x"].value_or(0.0f), config["waypoint"]["y"].value_or(0.0f)};
+    speed_ = config["speed"].value_or(1.0f);
+    tolerance_ = config["goal_tolerance"].value_or(0.1f);
+}
+
+void PatrolAgent::step()
+{
+    b2Vec2 goal;
+
+    // TODO: this is ugly, whatever
+    if (reverse_) {
+        goal = body_->GetLocalPoint(a_);
+        if (goal.Length() < tolerance_) {
+            reverse_ = !reverse_;
+            goal = body_->GetLocalPoint(b_);
+        }
+    } else {
+        goal = body_->GetLocalPoint(b_);
+        if (goal.Length() < tolerance_) {
+            reverse_ = !reverse_;
+            goal = body_->GetLocalPoint(a_);
+        }
+    }
+
+    goal.Normalize();
+    goal *= speed_;
+
+    body_->SetLinearVelocity(goal);
+    body_->SetAngularVelocity(0.0f);
+}
+
+
 VFHAgent::VFHAgent(const toml::table& config, b2World* world)
     : Agent(config, world),
       grid_(*config["grid"]["width"].value<unsigned>(), *config["grid"]["width"].value<unsigned>()),
