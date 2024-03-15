@@ -49,11 +49,12 @@ PatrolAgent::PatrolAgent(const toml::table& config, b2World* world)
     a_ = {config["x"].value_or(0.0f), config["y"].value_or(0.0f)};
     b_ = {config["waypoint"]["x"].value_or(0.0f), config["waypoint"]["y"].value_or(0.0f)};
     speed_ = config["speed"].value_or(1.0f);
-    tolerance_ = config["goal_tolerance"].value_or(0.1f);
+    tolerance_ = config["goal_tolerance"].value_or(0.5f);
 }
 
-void PatrolAgent::step()
+void PatrolAgent::step(float delta_t)
 {
+    (void)delta_t;
     b2Vec2 goal;
 
     // TODO: this is ugly, whatever
@@ -88,8 +89,22 @@ VFHAgent::VFHAgent(const toml::table& config, b2World* world)
 {
 }
 
-void VFHAgent::step()
+void VFHAgent::step(float delta_t)
 {
+    // TODO: use delta_t to simulate firing the "ultrasonic sensors" in series at a fixed interval,
+    // to make the simulation more 'realistic'.
+    // This mimics the real deal more closely, as crosstalk prevents firing all sensors at the same
+    // time. It also matches the case of a rotating LIDAR or RADAR, as an added bonus.
+    (void)delta_t;
+    auto sensor_readings = sensor_.sense_all();
+
+    b2Vec2 position = body_->GetPosition();
+    int x = std::round(position.x);
+    int y = std::round(position.y);
+
+    for (const auto& [distance, angle] : sensor_readings) {
+        grid_.add_percept(x, y, angle, distance);
+    }
 }
 
 } // namespace just

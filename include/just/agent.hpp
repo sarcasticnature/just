@@ -16,7 +16,7 @@ public:
     Agent(const toml::table& config, b2World* world);
     virtual ~Agent();
 
-    virtual void step() = 0;
+    virtual void step(float delta_t) = 0;
 
     const b2Body* get_body() { return body_; }
 
@@ -29,7 +29,7 @@ class PatrolAgent : public Agent
 public:
     PatrolAgent(const toml::table& config, b2World* world);
 
-    void step() override;
+    void step(float delta_t) override;
 private:
     b2Vec2 a_;
     b2Vec2 b_;
@@ -43,7 +43,7 @@ class VFHAgent : public Agent
 public:
     VFHAgent(const toml::table& config, b2World* world);
 
-    void step() override;
+    void step(float delta_t) override;
 
 private:
     HistogramGrid grid_;

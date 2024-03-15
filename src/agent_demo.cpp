@@ -145,7 +145,7 @@ theta = 0.25
                 std::cout << "box_pos: " << pos.x << ", " << pos.y << std::endl;
                 std::cout << "box_rot: " << body->GetAngle() << std::endl;
             }
-            (*it)->step();
+            (*it)->step(delta);
         }
 
         EndDrawing();
