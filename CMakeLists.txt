@@ -41,7 +41,6 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(tomlplusplus)
 
-include(FetchContent)
 FetchContent_Declare(
     doctest
     GIT_REPOSITORY https://github.com/doctest/doctest
@@ -49,6 +48,14 @@ FetchContent_Declare(
 	GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(doctest)
+
+FetchContent_Declare(
+  HighFive
+    GIT_REPOSITORY https://github.com/BlueBrain/HighFive.git
+    GIT_TAG v2.9.0
+	GIT_SHALLOW TRUE
+)
+FetchContent_MakeAvailable(HighFive)
 
 option(JUST_BUILD_TESTS "whether or not to build the tests" ON)
 
@@ -65,6 +72,7 @@ set(just_deps
     raylib
     tomlplusplus::tomlplusplus
     doctest::doctest
+    HighFive
 )
 
 add_library(just ${just_srcs})
