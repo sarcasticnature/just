@@ -1,11 +1,7 @@
 # just
 Jake's Ugly Simulation Testbed
 
-**NOTE:** CI tests will be broken until 24.04 is released as a GitHub actions runner image or Ubuntu gets their _shit_ together and releases binaries for a newer version of boost (that supports C++20)
-
 ![tests](https://github.com/sarcasticnature/just/actions/workflows/tests.yml/badge.svg)
-
-With that said, I frequently run all the tests locally and everything is passing.
 
 ## What is just?
 just is (eventually going to be) an implementation of a robotics motion planning algorithm (possibly more than one), with an accompanying simulation environment and visualization(s) to boot.
