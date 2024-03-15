@@ -393,4 +393,6 @@ TEST_CASE("HistogramGrid.subgrid") {
         auto subgrid = subgrid_opt.value(); // NOLINT (not sure why this is needed)
         REQUIRE(std::all_of(subgrid.begin(), subgrid.end(), [](uint8_t cv) { return cv == 0; }));
     }
+
+    // TODO: add more test cases
 }

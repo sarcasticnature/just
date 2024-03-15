@@ -49,6 +49,10 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(doctest)
 
+set(HIGHFIVE_UNIT_TESTS OFF)
+set(HIGHFIVE_EXAMPLES OFF)
+set(HIGHFIVE_BUILD_DOCS OFF)
+
 FetchContent_Declare(
   HighFive
     GIT_REPOSITORY https://github.com/BlueBrain/HighFive.git
