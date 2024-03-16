@@ -9,6 +9,7 @@
 #include "toml++/toml.hpp"
 
 #include "just/agent.hpp"
+#include "just/world_model.hpp"
 
 int main(int argc, char** argv)
 {

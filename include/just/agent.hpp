@@ -41,6 +41,24 @@ private:
 class VFHAgent : public Agent
 {
 public:
+    static constexpr size_t WINDOW_SIZE = 100;
+    static constexpr size_t WINDOW_SIZE_SQUARED = WINDOW_SIZE * WINDOW_SIZE;
+
+    // Adapter class to make a subgrid more ergonomic to use
+    class SubgridAdapter {
+    public:
+        SubgridAdapter() = delete;
+        explicit SubgridAdapter(std::array<uint8_t, WINDOW_SIZE_SQUARED>&& arr)
+            : arr_(std::move(arr)) {}
+
+        // NOTE: no bounds checking is done and an exception may be thrown
+        uint8_t at(int x, int y) {
+            return arr_.at(y * WINDOW_SIZE + x);
+        }
+    private:
+        std::array<uint8_t, WINDOW_SIZE_SQUARED> arr_;
+    };
+
     VFHAgent(const toml::table& config, b2World* world);
 
     void step(float delta_t) override;

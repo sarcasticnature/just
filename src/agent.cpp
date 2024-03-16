@@ -105,6 +105,14 @@ void VFHAgent::step(float delta_t)
     for (const auto& [distance, angle] : sensor_readings) {
         grid_.add_percept(x, y, angle, distance);
     }
+
+    auto window_grid_opt = grid_.subgrid<WINDOW_SIZE, WINDOW_SIZE>(x, y);
+    if (!window_grid_opt) {
+        // Hit the edge of the map, not much to be done about it
+        // TODO: figure out what's to be done about it?
+        return;
+    }
+    SubgridAdapter window(std::move(*window_grid_opt));
 }
 
 } // namespace just

@@ -136,32 +136,6 @@ void HistogramGrid::decrement_cell(int x, int y)
     }
 }
 
-template <size_t W, size_t H>
-std::optional<std::array<uint8_t, W * H>> HistogramGrid::subgrid(int x, int y) const
-{
-    int sub_x_max = x + W / 2;
-    int sub_y_max = y + H / 2;
-
-    // See the constructor for a summary of why this is necessary
-    int sub_x_min = W % 2 ? x - W / 2 : x - W / 2 - 1;
-    int sub_y_min = H % 2 ? y - H / 2 : y - H / 2 - 1;
-
-    if (sub_x_max > x_max_ || sub_y_max > y_max_ || sub_x_min < x_min_ || sub_y_min < y_min_) {
-        return std::nullopt;
-    }
-
-    std::array<uint8_t, W * H> subarray;
-    size_t idx = 0;
-    for (int y = sub_y_min; y <= sub_y_max; ++y) {
-        for (int x = sub_x_min; x <= sub_x_max; ++x) {
-            subarray.at(idx) = unsafe_at(x, y);
-            ++idx;
-        }
-    }
-
-    return { subarray };
-}
-
 } // namespace just
 
 TEST_CASE("HistogramGrid.within_bounds()") {
