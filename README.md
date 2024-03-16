@@ -39,10 +39,12 @@ This is a _very_ coarse estimation of the roadmap and is subject to change:
 * [x] Implement adding perception data (percepts) to said grid (following the method described in the HIMM paper)
 * [x] Create an idealistic 'sensor' that mimics a LIDAR/RADAR/Ultrasonic sensor array, for use in adding percepts to the grid
 * [ ] Implement VFH
+    * [x] perform the first data transformation to a polar histogram grid
+    * [ ] perform the second transformation to produce a steering output
 * [ ] Create an 'agent' that
     * [x] moves in the world
     * [x] has a perception 'sensor'
-    * [ ] updates a histogram grid
+    * [x] updates a histogram grid
     * [ ] utilizes VFH to control its motion
     * [ ] can be visualized
 * [ ] Create a configurable simulation environment (with obstacles) in which to place agents
