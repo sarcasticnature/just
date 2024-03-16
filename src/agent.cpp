@@ -112,7 +112,43 @@ void VFHAgent::step(float delta_t)
         // TODO: figure out what's to be done about it?
         return;
     }
+
+    std::array<int, K> sectors;
     SubgridAdapter window(std::move(*window_grid_opt));
+
+    // construct the polar histogram
+    float beta, m, cv, d;
+    for (size_t i = 0; i < WINDOW_SIZE; ++i) {
+        for (size_t j = 0; i < WINDOW_SIZE; ++j) {
+            beta = std::atan2(y, x);
+            cv = static_cast<float>(window.at(j,i));
+            d = std::sqrt(x * x + y * y);
+            m = cv * cv * (A - B * d);
+            sectors.at(std::round(beta / ALPHA)) += m;
+        }
+    }
+
+    // smooth the polar histogram
+    int h_prime, idx;
+    std::array<int, K> smoothed_sectors;
+    for (int i = 0; i < K; ++i) {
+        h_prime = 0;
+        for (int l = -L; l <= L; ++l) {
+            idx = i + l;
+
+            if (idx < 0) {
+                idx += K;
+            } else if (idx >= K) {
+                idx -= K;
+            }
+
+            // Slight difference from the paper here:
+            // I think there's a typo/error in the original publication (equation 5)
+            h_prime += sectors.at(idx) * (1 + L - std::abs(l));
+        }
+        h_prime /= 2 * L + 1;
+        smoothed_sectors.at(i) = h_prime;
+    }
 }
 
 } // namespace just
