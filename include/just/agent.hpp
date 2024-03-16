@@ -5,6 +5,7 @@
 
 #include "box2d/box2d.h"
 #include "toml++/toml.hpp"
+#include "highfive/highfive.hpp"
 
 #include "world_model.hpp"
 #include "sensor.hpp"
@@ -54,7 +55,7 @@ public:
     // NOTE: std::sqrt isn't constexpr until C++26, using a hardcoded sqrt(2) instead
     static constexpr float A = 1.414213562 * (WINDOW_SIZE - 1) / 2.0;
 
-    static constexpr int L = 5;
+    static constexpr int L = 0;
 
     VFHAgent(const toml::table& config, b2World* world);
 
@@ -77,8 +78,19 @@ private:
         std::array<uint8_t, WINDOW_SIZE_SQUARED> arr_;
     };
 
+    class Logger {
+    public:
+        Logger(std::string filename, unsigned grid_size);
+        void log_polar_histogram(std::array<float, K> polar_histogram);
+        void log_window(std::array<uint8_t, WINDOW_SIZE_SQUARED> window);
+        void log_full_grid(const HistogramGrid& grid);
+    private:
+        HighFive::File file_;
+    };
+
     HistogramGrid grid_;
     UltrasonicArray sensor_;
+    Logger logger_;
 };
 
 } // namespace just

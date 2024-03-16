@@ -85,9 +85,56 @@ VFHAgent::VFHAgent(const toml::table& config, b2World* world)
       grid_(*config["grid"]["width"].value<unsigned>(), *config["grid"]["width"].value<unsigned>()),
       sensor_(*config["sensor"]["count"].value<unsigned>(),
               *config["sensor"]["range"].value<float>(),
-              body_)
+              body_),
+      logger_("/tmp/just/" + *config["name"].value<std::string>() + "/foo.h5",
+              grid_.height() * grid_.width())
 {
 }
+
+
+VFHAgent::Logger::Logger(std::string filename, unsigned grid_size)
+    : file_(filename, HighFive::File::OpenOrCreate | HighFive::File::Truncate)
+{
+    // TODO: remove hardcoding
+    // TODO: create directory if it doesn't already exist
+    HighFive::DataSpace dataspace({K, 1}, {K, HighFive::DataSpace::UNLIMITED});
+    HighFive::DataSetCreateProps props;
+    props.add(HighFive::Chunking(std::vector<hsize_t>{K, 1}));
+    file_.createDataSet("/vfh_agent/polar_histogram",
+                        dataspace,
+                        HighFive::create_datatype<float>(),
+                        props);
+
+    file_.createDataSet("/vfh_agent/window_histogram",
+                        {WINDOW_SIZE_SQUARED},
+                        HighFive::create_datatype<uint8_t>());
+
+    file_.createDataSet("/vfh_agent/full_histogram",
+                        {grid_size},
+                        HighFive::create_datatype<uint8_t>());
+}
+
+void VFHAgent::Logger::log_polar_histogram(std::array<float, K> polar_histogram)
+{
+    auto dataset = file_.getDataSet("/vfh_agent/polar_histogram");
+    auto dims = dataset.getDimensions();
+    dims.at(1) += 1;
+    dataset.resize(dims);
+    dataset.select({0, dims.at(1) - 1}, {K, 1}).write(polar_histogram);
+}
+
+void VFHAgent::Logger::log_window(std::array<uint8_t, WINDOW_SIZE_SQUARED> window)
+{
+    auto dataset = file_.getDataSet("/vfh_agent/window_histogram");
+    dataset.write(window);
+}
+
+void VFHAgent::Logger::log_full_grid(const HistogramGrid& grid)
+{
+    auto dataset = file_.getDataSet("/vfh_agent/full_histogram");
+    dataset.write(grid.data());
+}
+
 
 void VFHAgent::step(float delta_t)
 {
@@ -106,6 +153,8 @@ void VFHAgent::step(float delta_t)
         grid_.add_percept(x, y, angle, distance);
     }
 
+    logger_.log_full_grid(grid_);
+
     auto window_grid_opt = grid_.subgrid<WINDOW_SIZE, WINDOW_SIZE>(x, y);
     if (!window_grid_opt) {
         // Hit the edge of the map, not much to be done about it
@@ -113,24 +162,32 @@ void VFHAgent::step(float delta_t)
         return;
     }
 
-    std::array<int, K> sectors;
+    logger_.log_window(*window_grid_opt);
+    std::array<float, K> sectors;
     SubgridAdapter window(std::move(*window_grid_opt));
 
     // construct the polar histogram
     float beta, m, cv, d;
+    int x_j, y_i;
+    int offset = WINDOW_SIZE % 2 ? 0 : 1;
     for (size_t i = 0; i < WINDOW_SIZE; ++i) {
-        for (size_t j = 0; i < WINDOW_SIZE; ++j) {
-            beta = std::atan2(y, x);
+        y_i = offset + i - (WINDOW_SIZE / 2);
+        for (size_t j = 0; j < WINDOW_SIZE; ++j) {
+            x_j = offset + j - (WINDOW_SIZE / 2);
+            beta = std::atan2(y_i, x_j);
+            while (beta < 0.0) {
+                beta += 2 * M_PI;
+            }
             cv = static_cast<float>(window.at(j,i));
-            d = std::sqrt(x * x + y * y);
+            d = std::sqrt(x_j * x_j + y_i * y_i);
             m = cv * cv * (A - B * d);
-            sectors.at(std::round(beta / ALPHA)) += m;
+            sectors.at(std::floor(beta / ALPHA)) += m;  // TODO: is floor what we want?
         }
     }
 
     // smooth the polar histogram
     int h_prime, idx;
-    std::array<int, K> smoothed_sectors;
+    std::array<float, K> smoothed_sectors;
     for (int i = 0; i < K; ++i) {
         h_prime = 0;
         for (int l = -L; l <= L; ++l) {
@@ -143,12 +200,14 @@ void VFHAgent::step(float delta_t)
             }
 
             // Slight difference from the paper here:
-            // I think there's a typo/error in the original publication (equation 5)
+            // I think there's a typo/error in the original publicaion (equation 5)
             h_prime += sectors.at(idx) * (1 + L - std::abs(l));
         }
         h_prime /= 2 * L + 1;
         smoothed_sectors.at(i) = h_prime;
     }
+
+    logger_.log_polar_histogram(smoothed_sectors);
 }
 
 } // namespace just

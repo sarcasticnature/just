@@ -58,7 +58,7 @@ theta = 0.25
         config = toml::parse(demo_config);
     }
 
-    std::cout << "TOML config is:\n\n" << config << std::endl;
+    //std::cout << "TOML config is:\n\n" << config << std::endl;
 
     int width = config["world"]["width"].value_or(1000);
     int height = config["world"]["height"].value_or(1000);
@@ -78,15 +78,15 @@ theta = 0.25
                 if (type_opt.value() == "vfh") {
                     agents.push_back(std::make_unique<just::VFHAgent>(agent_config, world));
                     success = true;
-                    return;
                 } else if (type_opt.value() == "patrol") {
                     agents.push_back(std::make_unique<just::PatrolAgent>(agent_config, world));
                     success = true;
                 }
+            } else {
+                std::cout << "Agent type missing or invalid, skipping agent: "
+                          << agent_config["name"].value_or("<name missing>")
+                          << std::endl;
             }
-            std::cout << "Agent type missing or invalid, skipping agent: "
-                      << agent_config["name"].value_or("<name missing>")
-                      << std::endl;
         });
         if (success == false) {
             std::cout << "Error parsing 'agents' array in config, exiting" << std::endl;
@@ -95,16 +95,16 @@ theta = 0.25
     }
 
     // Ground
-    b2BodyDef ground_body_def;
-    ground_body_def.type = b2_staticBody;
-    ground_body_def.position.Set(0.0, -5.0);
-    b2Body* ground_body = world->CreateBody(&ground_body_def);
+    //b2BodyDef ground_body_def;
+    //ground_body_def.type = b2_staticBody;
+    //ground_body_def.position.Set(0.0, -5.0);
+    //b2Body* ground_body = world->CreateBody(&ground_body_def);
 
-    b2EdgeShape ground_shape;
-    ground_shape.SetTwoSided({-10.0, 0.0}, {10.0, 0.0});
-    b2FixtureDef ground_fixture_def;
-    ground_fixture_def.shape = &ground_shape;
-    ground_body->CreateFixture(&ground_fixture_def);
+    //b2EdgeShape ground_shape;
+    //ground_shape.SetTwoSided({-10.0, 0.0}, {10.0, 0.0});
+    //b2FixtureDef ground_fixture_def;
+    //ground_fixture_def.shape = &ground_shape;
+    //ground_body->CreateFixture(&ground_fixture_def);
 
     //float theta = 0.0;
     b2Vec2 pos;
@@ -133,7 +133,7 @@ theta = 0.25
             Vector2 screen_pos = {pos.x * scale + width / 2.0f, height / 2.0f - pos.y * scale};
 
             if (type == b2Shape::Type::e_circle) {
-                std::cout << "circle_pos: " << pos.x << ", " << pos.y << std::endl;
+                //std::cout << "circle_pos: " << pos.x << ", " << pos.y << std::endl;
                 DrawCircleV(screen_pos, shape->m_radius * scale, WHITE);
             } else if (type == b2Shape::Type::e_polygon) {
                 auto rectangle_shape = reinterpret_cast<const b2PolygonShape*>(shape);
@@ -143,8 +143,8 @@ theta = 0.25
 
                 DrawRectanglePro(rectangle, {half_width * scale, half_height * scale}, rot, BLUE);
                 DrawRectangleRec({(pos.x - half_width) * scale + width / 2.0f, (-pos.y - half_height) * scale + height / 2.0f, half_width * 2.0f * scale, half_height * 2.0f * scale}, RED);
-                std::cout << "box_pos: " << pos.x << ", " << pos.y << std::endl;
-                std::cout << "box_rot: " << body->GetAngle() << std::endl;
+                //std::cout << "box_pos: " << pos.x << ", " << pos.y << std::endl;
+                //std::cout << "box_rot: " << body->GetAngle() << std::endl;
             }
             (*it)->step(delta);
         }

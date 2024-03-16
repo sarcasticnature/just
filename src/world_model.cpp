@@ -41,6 +41,9 @@ bool HistogramGrid::add_percept(int x0, int y0, float theta, float distance)
     if (!within_bounds(x0, y0)) {
         return false;
     }
+    if (distance < 0.01) {
+        return true;
+    }
 
     int x1 = std::round(distance * std::cos(theta));
     int y1 = std::round(distance * std::sin(theta));

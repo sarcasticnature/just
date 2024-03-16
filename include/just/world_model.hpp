@@ -77,8 +77,8 @@ std::optional<std::array<uint8_t, W * H>> HistogramGrid::subgrid(int x, int y) c
     int sub_y_max = y + H / 2;
 
     // See the constructor for a summary of why this is necessary
-    int sub_x_min = W % 2 ? x - W / 2 : x - W / 2 - 1;
-    int sub_y_min = H % 2 ? y - H / 2 : y - H / 2 - 1;
+    int sub_x_min = W % 2 ? x - W / 2 : x - (W / 2 - 1);
+    int sub_y_min = H % 2 ? y - H / 2 : y - (H / 2 - 1);
 
     if (sub_x_max > x_max_ || sub_y_max > y_max_ || sub_x_min < x_min_ || sub_y_min < y_min_) {
         return std::nullopt;
