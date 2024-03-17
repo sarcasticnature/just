@@ -1,5 +1,8 @@
 build/
 
+# Jupyter Notebook
+*.ipynb_checkpoints
+
 # Prerequisites
 *.d
 

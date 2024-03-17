@@ -211,7 +211,7 @@ void VFHAgent::step(float delta_t)
         smoothed_sectors.at(i) = h_prime;
     }
 
-    logger_.log_polar_histogram(sectors);
+    logger_.log_polar_histogram(smoothed_sectors);
 
     // TODO: remove after testing
     body_->SetLinearVelocity({0.0f, 1.0f});
