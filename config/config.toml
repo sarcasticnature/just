@@ -2,7 +2,7 @@
 height = 1000
 width = 1000
 scale = 10.0
-fps = 20
+fps = 60
 
 #[[obstacles]]
 #color = "white"
@@ -29,6 +29,8 @@ name = "jerry"
 type = "vfh"
 grid = { width = 1000, height = 1000 }
 sensor = { count = 36, range = 50.0 }
+goal = { x = 50.0, y = 0.0 }
+valley_threshold = 10000
 shape = "box"
 width = 4.0
 height = 4.0

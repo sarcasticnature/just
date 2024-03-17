@@ -1,5 +1,6 @@
 #include <string_view>
 #include <exception>
+#include <iostream> // TODO: remove
 
 #include "just/agent.hpp"
 
@@ -87,8 +88,10 @@ VFHAgent::VFHAgent(const toml::table& config, b2World* world)
               *config["sensor"]["range"].value<float>(),
               body_),
       logger_("/tmp/just/" + *config["name"].value<std::string>() + "/foo.h5",
-              grid_.height() * grid_.width())
+              grid_.height() * grid_.width()),
+      valley_threshold_(*config["valley_threshold"].value<float>())
 {
+    goal_ = {*config["goal"]["x"].value<float>(), *config["goal"]["y"].value<float>()};
 }
 
 
@@ -97,13 +100,13 @@ VFHAgent::Logger::Logger(std::string filename, unsigned grid_size)
 {
     // TODO: remove hardcoding
     // TODO: create directory if it doesn't already exist
-    HighFive::DataSpace dataspace({K, 1}, {K, HighFive::DataSpace::UNLIMITED});
-    HighFive::DataSetCreateProps props;
-    props.add(HighFive::Chunking(std::vector<hsize_t>{K, 1}));
+    HighFive::DataSpace polar_histogram_dataspace({K, 1}, {K, HighFive::DataSpace::UNLIMITED});
+    HighFive::DataSetCreateProps polar_histogram_props;
+    polar_histogram_props.add(HighFive::Chunking(std::vector<hsize_t>{K, 1}));
     file_.createDataSet("/vfh_agent/polar_histogram",
-                        dataspace,
+                        polar_histogram_dataspace,
                         HighFive::create_datatype<float>(),
-                        props);
+                        polar_histogram_props);
 
     file_.createDataSet("/vfh_agent/window_histogram",
                         {WINDOW_SIZE_SQUARED},
@@ -112,6 +115,15 @@ VFHAgent::Logger::Logger(std::string filename, unsigned grid_size)
     file_.createDataSet("/vfh_agent/full_histogram",
                         {grid_size},
                         HighFive::create_datatype<uint8_t>());
+
+    HighFive::DataSpace angle_dataspace({100}, {HighFive::DataSpace::UNLIMITED});
+    HighFive::DataSetCreateProps angle_props;
+    angle_props.add(HighFive::Chunking(std::vector<hsize_t>{100}));
+    file_.createDataSet("/vfh_agent/steering_angle",
+                        angle_dataspace,
+                        HighFive::create_datatype<float>(),
+                        angle_props);
+    // TODO: log speed;
 }
 
 void VFHAgent::Logger::log_polar_histogram(std::array<float, K> polar_histogram)
@@ -135,6 +147,20 @@ void VFHAgent::Logger::log_full_grid(const HistogramGrid& grid)
     dataset.write(grid.data());
 }
 
+void VFHAgent::Logger::log_steering(float angle, float speed)
+{
+    // TODO: log speed;
+    (void)speed;
+
+    auto dataset = file_.getDataSet("/vfh_agent/steering_angle");
+    auto dims = dataset.getDimensions();
+    if (dims.at(0) <= steering_idx_) {
+        dims.at(0) += 100;
+        dataset.resize(dims);
+    }
+    dataset.select({steering_idx_}, {1}).write(angle);
+    ++steering_idx_;
+}
 
 void VFHAgent::step(float delta_t)
 {
@@ -159,6 +185,10 @@ void VFHAgent::step(float delta_t)
     }
 
     logger_.log_polar_histogram(*polar_histogram_opt);
+
+    auto [angle, speed] = compute_steering(*polar_histogram_opt);
+
+    logger_.log_steering(angle, speed);
 
     // TODO: remove after testing
     body_->SetLinearVelocity({0.0f, 1.0f});
@@ -199,6 +229,7 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
     SubgridAdapter window(std::move(*window_grid_opt));
 
     // construct the polar histogram
+    size_t sector_idx;
     float beta, m, cv, d;
     int x_j, y_i;
     int offset = WINDOW_SIZE % 2 ? 0 : 1;
@@ -213,7 +244,11 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
             cv = static_cast<float>(window.at(j,i));
             d = std::sqrt(x_j * x_j + y_i * y_i);
             m = cv * cv * (A - B * d);
-            sectors.at(std::floor(beta / ALPHA)) += m;  // TODO: is floor what we want?
+            sector_idx = std::round(beta / ALPHA);
+            if (sector_idx >= K) {
+                sector_idx -= K;
+            }
+            sectors.at(sector_idx) += m;
         }
     }
 
@@ -240,6 +275,107 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
     }
 
     return { smoothed_sectors };
+}
+
+VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>& polar_histogram)
+{
+    // Get the target sector
+    b2Vec2 goal_local = body_->GetLocalPoint(goal_);
+    float goal_theta = std::atan2(goal_local.y, goal_local.x);
+    while (goal_theta < 0.0) {
+        goal_theta += 2 * M_PI;
+    }
+    size_t k_target = std::round(goal_theta / ALPHA);
+    if (k_target >= K) {
+        k_target -= K;
+    }
+
+    float theta;    // output steering angle
+    bool target_in_valley = polar_histogram.at(k_target) <= valley_threshold_;
+    std::cout << "target_in_valley = " << std::boolalpha << target_in_valley << std::endl;
+
+    if (target_in_valley) {
+        theta = k_target * ALPHA;
+        std::cout << "theta = " << theta << std::endl;
+    } else {
+        // Determine the start/end sectors of the 'selected valley'
+        // This gets a bit messy as there are a lot of edge cases... TODO: improve?
+        size_t l, r;
+        l = r = k_target;
+
+        // Find the left edge of the peak (exclusive)
+        do {
+            l = l != 0 ? l - 1 : K - 1;
+        } while (polar_histogram.at(l) > valley_threshold_ && l != k_target);
+
+        if (l == k_target) {
+            // The only way this can happen is if *all* sectors are above the threshold.
+            // When this is the case there is nothing we can (should?) do,
+            // other than return a zero'ed out steering command;
+            // Note that this check should only be necessary once (on the left side in this case)
+            return {0.0, 0.0};
+        }
+
+        // Find the right edge of the peak (exclusive)
+        do {
+            r = r != K - 1 ? r + 1 : 0;
+        } while (polar_histogram.at(r) > valley_threshold_);
+
+        size_t distance_l = l <= k_target ? k_target - l : k_target + K - l;
+        size_t distance_r = r >= k_target ? r - k_target : r + K - k_target;
+
+        size_t k_n, k_f;
+        if (distance_l <= distance_r) {
+            std::cout << "L" << std::endl;
+            k_n = k_f = l;
+
+            do {
+                k_f = k_f != 0 ? k_f - 1 : K - 1;
+            } while (polar_histogram.at(k_f) <= valley_threshold_);
+
+            k_f = k_f != K - 1 ? k_f + 1 : 0;
+
+            if (k_f <= k_n) {
+                float idx = (k_f + k_n) / 2.0;
+                theta = idx * ALPHA;
+            } else {
+                // TODO: clean this up if possible
+                // magnitude of the averaged distance from k_target (direction is negative)
+                float idx = (distance_l + 1 + (K - 1) - k_f) / 2.0;
+                idx = k_target - idx;
+                if (idx < 0) {
+                    // TODO: I think this is always the case, but... whatever
+                    idx += K;
+                }
+                theta = idx * ALPHA;    // TODO: this could put theta >= 2*PI
+            }
+        } else {
+            std::cout << "R" << std::endl;
+            k_n = k_f = r;
+
+            do {
+                k_f = k_f != K - 1 ? k_f + 1 : 0;
+            } while (polar_histogram.at(k_f) <= valley_threshold_);
+
+            k_f = k_f != 0 ? k_f - 1 : K - 1;
+
+            if (k_f >= k_n) {
+                float idx = (k_f + k_n) / 2.0;
+                theta = idx * ALPHA;
+            } else {
+                // TODO: clean this up if possible
+                float idx = (distance_r * 2 + 1 + k_f) / 2.0;
+                idx = k_target + idx;
+                if (idx > K - 1) {
+                    // TODO: I think this is always the case, but... whatever
+                    idx -= K;
+                }
+                theta = idx * ALPHA;    // TODO: could this could put theta >= 2*PI?
+            }
+        }
+    }
+
+    return {theta, 0.0};
 }
 
 } // namespace just
