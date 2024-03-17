@@ -16,11 +16,11 @@ fps = 20
 [[agents]]
 name = "tom"
 type = "patrol"
-waypoint = { x = 20.0, y = 20.0 }
-speed = 20.0
+waypoint = { x = 0.5, y = 0.5 }
+speed = 0.5
 shape = "circle"
 radius = 2.0
-x = 0.0
+x = 10.0
 y = 0.0
 theta = 0.0
 
@@ -32,6 +32,6 @@ sensor = { count = 36, range = 30.0 }
 shape = "box"
 width = 4.0
 height = 4.0
-x = -10.00
-y = 0.0
+x = 0.00
+y = -5.0
 theta = 0.0

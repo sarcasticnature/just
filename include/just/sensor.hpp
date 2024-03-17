@@ -23,6 +23,11 @@ public:
     SensorReading sense_one();
     std::vector<SensorReading> sense_all();
 
+    float max_range()
+    {
+        return beams_.at(0).local_endpoint.x;
+    }
+
 private:
     struct Beam
     {

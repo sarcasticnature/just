@@ -4,7 +4,7 @@ Jake's Ugly Simulation Testbed
 ![tests](https://github.com/sarcasticnature/just/actions/workflows/tests.yml/badge.svg)
 
 ## What is just?
-just is (eventually going to be) an implementation of a robotics motion planning algorithm (possibly more than one), with an accompanying simulation environment and visualization(s) to boot.
+just is an implementation of a robotics motion planning algorithm (possibly more than one in the future), with an accompanying simulation environment and visualization(s) to boot.
 
 The focus is currently on methods related to the Vector Field Histogram (VFH) approach of motion planning for obstacle avoidance.
 There are evolutions of this algorithm (VFH+, VFH\*, etc), which may be explored at a later date.
@@ -15,6 +15,8 @@ There are no plans to implement SLAM at this time (although that could be an ext
 ## Where did the inspiration for just come from?
 The primary inspiration for this project was the paper "The Vector Field Histogram-Fast Obstacle Avoidance For Mobile Robots" from volume 7, number 3 of the (1991) IEEE Transactions on Robotics and Automation.
 The mapping approach was taken from the paper "Histogramic in-motion mapping for mobile robot obstacle avoidance", which was cited by the VFH paper.
+
+Note that some slight modifications/improvements have been made to the algorithms presented in the papers to better fit this use case.
 
 ## Why implement a (very) old approach?
 The short (and honest) answer is that the state of the art in mobile robot motion planning, mapping, and control is quite involved at this point in time, making it a poor choice to implement as a side project done in one's free time.
@@ -48,6 +50,7 @@ This is a _very_ coarse estimation of the roadmap and is subject to change:
     * [ ] utilizes VFH to control its motion
     * [ ] can be visualized
 * [ ] Create a configurable simulation environment (with obstacles) in which to place agents
+* [x] Add logging functionality so that the results of a simulation can be replayed and analyzed after the fact
 * [ ] Create compelling visualizations of the system as a whole
 
 Demos may be created along the way to show off bits of code along the way.

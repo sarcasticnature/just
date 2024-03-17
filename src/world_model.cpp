@@ -36,7 +36,7 @@ HistogramGrid::HistogramGrid(unsigned width, unsigned height)
     y_min_ = height % 2 ? -y_max_ : -(y_max_ - 1);
 }
 
-bool HistogramGrid::add_percept(int x0, int y0, float theta, float distance)
+bool HistogramGrid::add_percept(int x0, int y0, float theta, float distance, bool detected)
 {
     if (!within_bounds(x0, y0)) {
         return false;
@@ -89,7 +89,11 @@ bool HistogramGrid::add_percept(int x0, int y0, float theta, float distance)
             y0 = std::clamp(y0 + sy, y_min_, y_max_);
         }
     }
-    increment_cell(x0, y0);
+    if (detected) {
+        increment_cell(x0, y0);
+    } else {
+        decrement_cell(x0, y0);
+    }
 
     return true;
 }
@@ -203,28 +207,28 @@ TEST_CASE("HistogramGrid.add_percept") {
     SUBCASE("Add percept cardinal directions") {
         just::HistogramGrid grid(10,10);
 
-        REQUIRE(grid.add_percept(0, 0, 0.0, 3.0));
+        REQUIRE(grid.add_percept(0, 0, 0.0, 3.0, true));
         CHECK(grid.at(3,0).value() == just::HistogramGrid::CV_INC);
 
-        REQUIRE(grid.add_percept(0, 0, M_PI / 4, 3.0));
+        REQUIRE(grid.add_percept(0, 0, M_PI / 4, 3.0, true));
         CHECK(grid.at(2,2).value() == just::HistogramGrid::CV_INC);
 
-        REQUIRE(grid.add_percept(0, 0, M_PI / 2, 3.0));
+        REQUIRE(grid.add_percept(0, 0, M_PI / 2, 3.0, true));
         CHECK(grid.at(0,3).value() == just::HistogramGrid::CV_INC);
 
-        REQUIRE(grid.add_percept(0, 0, 3 * M_PI / 4, 3.0));
+        REQUIRE(grid.add_percept(0, 0, 3 * M_PI / 4, 3.0, true));
         CHECK(grid.at(-2,2).value() == just::HistogramGrid::CV_INC);
 
-        REQUIRE(grid.add_percept(0, 0, M_PI, 3.0));
+        REQUIRE(grid.add_percept(0, 0, M_PI, 3.0, true));
         CHECK(grid.at(-3,0).value() == just::HistogramGrid::CV_INC);
 
-        REQUIRE(grid.add_percept(0, 0, -3 * M_PI / 4, 3.0));
+        REQUIRE(grid.add_percept(0, 0, -3 * M_PI / 4, 3.0, true));
         CHECK(grid.at(-2,-2).value() == just::HistogramGrid::CV_INC);
 
-        REQUIRE(grid.add_percept(0, 0, -M_PI / 2, 3.0));
+        REQUIRE(grid.add_percept(0, 0, -M_PI / 2, 3.0, true));
         CHECK(grid.at(0,-3).value() == just::HistogramGrid::CV_INC);
 
-        REQUIRE(grid.add_percept(0, 0, -M_PI / 4, 3.0));
+        REQUIRE(grid.add_percept(0, 0, -M_PI / 4, 3.0, true));
         CHECK(grid.at(2,-2).value() == just::HistogramGrid::CV_INC);
     }
 
@@ -233,10 +237,10 @@ TEST_CASE("HistogramGrid.add_percept") {
 
         // Note: hand calculations were performed to obtain the 'correct' cell coordinates
         // for these cases
-        REQUIRE(grid.add_percept(0, 0, M_PI / 12, 4.0));
+        REQUIRE(grid.add_percept(0, 0, M_PI / 12, 4.0, true));
         CHECK(grid.at(4,1).value() == just::HistogramGrid::CV_INC);
 
-        REQUIRE(grid.add_percept(0, 0, M_PI / 6, 4.0));
+        REQUIRE(grid.add_percept(0, 0, M_PI / 6, 4.0, true));
         CHECK(grid.at(3,2).value() == just::HistogramGrid::CV_INC);
 
         // Now we verify that the ray is following the correct path (in addition to its destination)
@@ -247,16 +251,16 @@ TEST_CASE("HistogramGrid.add_percept") {
         // I solved for this analytically, but the math is a bit too long to type out here.
         // Was it necessary to find the exact values?
         // No, an approximation/emperically determined value would have been fine... but /shrug
-        REQUIRE(grid.add_percept(0, 0, 1.107, 2.236));
+        REQUIRE(grid.add_percept(0, 0, 1.107, 2.236, true));
         REQUIRE(grid.at(1,2).value() == just::HistogramGrid::CV_INC);
 
         // To increase the CV of the cell at (1,1), we use the unit circle to find
         // a magnitue of 2/sqrt(2) and a theta of pi/4
-        REQUIRE(grid.add_percept(0, 0, M_PI / 4, 1.414));
+        REQUIRE(grid.add_percept(0, 0, M_PI / 4, 1.414, true));
         REQUIRE(grid.at(1,1).value()== just::HistogramGrid::CV_INC);
 
         // Add the ray we actually want to check
-        REQUIRE(grid.add_percept(0, 0, M_PI / 3, 4.0));
+        REQUIRE(grid.add_percept(0, 0, M_PI / 3, 4.0, true));
         REQUIRE(grid.at(2,3).value() == just::HistogramGrid::CV_INC);
         // The other two cells should have been decremented, if the ray followed the 'correct'
         // path
@@ -280,7 +284,7 @@ TEST_CASE("HistogramGrid.add_percept") {
 
         // Load up a cell to max CV
         for (int i = 1; i <= 5; ++i) {
-            grid.add_percept(0, 0, 0.0, 3.0);
+            grid.add_percept(0, 0, 0.0, 3.0, true);
             REQUIRE(grid.at(0,0).value() == 0);
             REQUIRE(grid.at(1,0).value() == 0);
             REQUIRE(grid.at(2,0).value() == 0);
@@ -289,7 +293,7 @@ TEST_CASE("HistogramGrid.add_percept") {
         }
 
         // Verify that the cell doesn't go over max CV
-        grid.add_percept(0, 0, 0.0, 3.0);
+        grid.add_percept(0, 0, 0.0, 3.0, true);
 
         REQUIRE(grid.at(0,0).value() == 0);
         REQUIRE(grid.at(1,0).value() == 0);
@@ -307,41 +311,69 @@ TEST_CASE("HistogramGrid.add_percept") {
 
         // Load up the grid w/ a max CV cell
         for (int i = 0; i < 5; ++i) {
-            grid.add_percept(0, 0, 0.0, 3.0);
+            grid.add_percept(0, 0, 0.0, 3.0, true);
         }
         // Add another cell (to be decremented shortly)
-        grid.add_percept(0, 0, 0.0, 2.0);
+        grid.add_percept(0, 0, 0.0, 2.0, true);
 
         // Add a percept further away to decrement the other cells
-        grid.add_percept(0, 0, 0.0, 5.0);
+        grid.add_percept(0, 0, 0.0, 5.0, true);
 
         REQUIRE(grid.at(2,0).value() == 2);
         REQUIRE(grid.at(3,0).value() == 14);
         REQUIRE(grid.at(5,0).value() == 3);
 
-        grid.add_percept(0, 0, 0.0, 5.0);
+        grid.add_percept(0, 0, 0.0, 5.0, true);
 
         REQUIRE(grid.at(2,0).value() == 1);
         REQUIRE(grid.at(3,0).value() == 13);
         REQUIRE(grid.at(5,0).value() == 6);
 
-        grid.add_percept(0, 0, 0.0, 5.0);
+        grid.add_percept(0, 0, 0.0, 5.0, true);
 
         REQUIRE(grid.at(2,0).value() == 0);
         REQUIRE(grid.at(3,0).value() == 12);
         REQUIRE(grid.at(5,0).value() == 9);
 
-        grid.add_percept(0, 0, 0.0, 5.0);
+        grid.add_percept(0, 0, 0.0, 5.0, true);
 
         REQUIRE(grid.at(2,0).value() == 0);
         REQUIRE(grid.at(3,0).value() == 11);
         REQUIRE(grid.at(5,0).value() == 12);
     }
+
+    SUBCASE("Add percept without detection") {
+        just::HistogramGrid grid(10, 10);
+
+        // Test adding a percept where no object was detected
+        // No cells should have their CV incremented, only decremented
+        grid.add_percept(0, 0, 0.0, 3.0, false);
+
+        REQUIRE(grid.at(0,0).value() == 0);
+        REQUIRE(grid.at(1,0).value() == 0);
+        REQUIRE(grid.at(2,0).value() == 0);
+        REQUIRE(grid.at(3,0).value() == 0);
+        REQUIRE(grid.at(4,0).value() == 0);
+
+        // Load up the grid w/ a max CV cell
+        int cnt = just::HistogramGrid::CV_MAX / just::HistogramGrid::CV_INC;
+        for (int i = 0; i < cnt; ++i) {
+            grid.add_percept(0, 0, 0.0, 3.0, true);
+        }
+
+        // Ensure that adding a percept without a detection still decrements all cells inbetween
+        grid.add_percept(0, 0, 0.0, 5.0, false);
+        REQUIRE(grid.at(3,0).value() == just::HistogramGrid::CV_MAX - 1);
+
+        // Ensure that adding a percept w/o detection decrements the cell at max range
+        grid.add_percept(0, 0, 0.0, 3.0, false);
+        REQUIRE(grid.at(3,0).value() == just::HistogramGrid::CV_MAX - 2);
+    }
 }
 
 TEST_CASE("HistogramGrid.subgrid") {
     just::HistogramGrid grid(10,10);
-    grid.add_percept(0, 0, 0.0, 3.0);
+    grid.add_percept(0, 0, 0.0, 3.0, true);
 
     SUBCASE("Invalid subgrids") {
         auto subgrid_opt_0 = grid.subgrid<100,100>(0,0); // NOLINT (not sure why this is needed)

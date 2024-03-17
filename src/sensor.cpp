@@ -37,7 +37,7 @@ UltrasonicArray::SensorReading UltrasonicArray::sense_one()
 
     world->RayCast(&cb, body_->GetPosition(), world_endpoint);
 
-    reading.distance = cb.min_distance != std::numeric_limits<float>::max() ? cb.min_distance : 0.0;
+    reading.distance = cb.min_distance <= max_range() ? cb.min_distance : -1.0;
     reading.angle = beam.relative_angle;
 
     return reading;
@@ -94,16 +94,16 @@ TEST_CASE("UltrasonicArray sensor tests") {
 
         auto reading = sensor.sense_one();
         REQUIRE(reading.angle == 0.0);
-        REQUIRE(reading.distance == 0.0);
+        REQUIRE(reading.distance == -1.0);
 
         reading = sensor.sense_one();
         REQUIRE(reading.angle == 0.0);
-        REQUIRE(reading.distance == 0.0);
+        REQUIRE(reading.distance == -1.0);
 
         auto reading_vec = sensor.sense_all();
         REQUIRE(reading_vec.size() == 1);
         REQUIRE(reading_vec.at(0).angle == 0.0);
-        REQUIRE(reading_vec.at(0).distance == 0.0);
+        REQUIRE(reading_vec.at(0).distance == -1.0);
     }
 
     SUBCASE("Multiple sensors") {
@@ -113,14 +113,14 @@ TEST_CASE("UltrasonicArray sensor tests") {
         for (int i = 0; i < 10; ++i) {
             reading = sensor.sense_one();
             REQUIRE(reading.angle == doctest::Approx(i * 2.0 * M_PI / 10.0));
-            REQUIRE(reading.distance == 0.0);
+            REQUIRE(reading.distance == -1.0);
         }
 
         auto reading_vec = sensor.sense_all();
         REQUIRE(reading_vec.size() == 10);
         for (int i = 0; i < 10; ++i) {
             REQUIRE(reading_vec.at(i).angle == doctest::Approx(i * 2.0 * M_PI / 10.0));
-            REQUIRE(reading_vec.at(i).distance == 0.0);
+            REQUIRE(reading_vec.at(i).distance == -1.0);
         }
     }
 
@@ -171,10 +171,10 @@ TEST_CASE("UltrasonicArray sensor tests") {
 
         reading = sensor.sense_one();
         REQUIRE(reading.angle == doctest::Approx(M_PI));
-        CHECK(reading.distance == 0.0);
+        CHECK(reading.distance == -1.0);
 
         reading = sensor.sense_one();
         REQUIRE(reading.angle == doctest::Approx(3 * M_PI / 2));
-        CHECK(reading.distance == 0.0);
+        CHECK(reading.distance == -1.0);
     }
 }

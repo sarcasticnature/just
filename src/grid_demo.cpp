@@ -25,20 +25,20 @@ int main()
         ClearBackground(BLACK);
 
         if (IsKeyPressed(KEY_W)) {
-            grid.add_percept(0, 0, -PI / 2, 3.0);
+            grid.add_percept(0, 0, -PI / 2, 3.0, true);
         }
         if (IsKeyPressed(KEY_S)) {
-            grid.add_percept(0, 0, PI / 2, 3.0);
+            grid.add_percept(0, 0, PI / 2, 3.0, true);
         }
         if (IsKeyPressed(KEY_A)) {
-            grid.add_percept(0, 0, PI, 3.0);
+            grid.add_percept(0, 0, PI, 3.0, true);
         }
         if (IsKeyPressed(KEY_D)) {
-            grid.add_percept(0, 0, 0.0, 3.0);
+            grid.add_percept(0, 0, 0.0, 3.0, true);
         }
 
         if (IsKeyPressed(KEY_L)) {
-            grid.add_percept(0, 0, 0.0, 5.0);
+            grid.add_percept(0, 0, 0.0, 5.0, true);
         }
 
         for (int row = 0; row < grid_size; ++row) {

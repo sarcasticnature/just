@@ -150,7 +150,11 @@ void VFHAgent::step(float delta_t)
     int y = std::round(position.y);
 
     for (const auto& [distance, angle] : sensor_readings) {
-        grid_.add_percept(x, y, angle, distance);
+        if (distance < 0.0) {
+            grid_.add_percept(x, y, angle, sensor_.max_range(), false);
+        } else {
+            grid_.add_percept(x, y, angle, distance, true);
+        }
     }
 
     logger_.log_full_grid(grid_);
@@ -207,7 +211,10 @@ void VFHAgent::step(float delta_t)
         smoothed_sectors.at(i) = h_prime;
     }
 
-    logger_.log_polar_histogram(smoothed_sectors);
+    logger_.log_polar_histogram(sectors);
+
+    // TODO: remove after testing
+    body_->SetLinearVelocity({0.0f, 1.0f});
 }
 
 } // namespace just

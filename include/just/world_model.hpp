@@ -41,8 +41,10 @@ public:
     inline bool within_bounds(int x, int y) const;
 
     // Ingest information from a new percept ('sensor' distance measurment) to the grid
+    // Takes in the position of the base, the angle and distance of the reading,
+    // and whether or not an obstacle was detected at that range
     // returns false if the percept couldn't be processed, true otherwise
-    bool add_percept(int x0, int y0, float theta, float distance);
+    bool add_percept(int x0, int y0, float theta, float distance, bool detected);
 
     // Get a subset of the grid
     template <size_t W, size_t H>
