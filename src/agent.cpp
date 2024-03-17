@@ -143,6 +143,29 @@ void VFHAgent::step(float delta_t)
     // This mimics the real deal more closely, as crosstalk prevents firing all sensors at the same
     // time. It also matches the case of a rotating LIDAR or RADAR, as an added bonus.
     (void)delta_t;
+
+    sense();
+    logger_.log_full_grid(grid_);
+
+    auto polar_histogram_opt = create_polar_histogram();
+    if (!polar_histogram_opt) {
+        // Hit the edge of the map, not much to be done about it.
+        // TODO: figure out what's to be done about it?
+
+        // Sit still and question life choices.
+        body_->SetLinearVelocity({0.0f, 0.0f});
+        body_->SetAngularVelocity(0.0f);
+        return;
+    }
+
+    logger_.log_polar_histogram(*polar_histogram_opt);
+
+    // TODO: remove after testing
+    body_->SetLinearVelocity({0.0f, 1.0f});
+}
+
+void VFHAgent::sense()
+{
     auto sensor_readings = sensor_.sense_all();
 
     b2Vec2 position = body_->GetPosition();
@@ -156,17 +179,22 @@ void VFHAgent::step(float delta_t)
             grid_.add_percept(x, y, angle, distance, true);
         }
     }
+}
 
-    logger_.log_full_grid(grid_);
+std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
+{
+    b2Vec2 position = body_->GetPosition();
+    int x = std::round(position.x);
+    int y = std::round(position.y);
 
     auto window_grid_opt = grid_.subgrid<WINDOW_SIZE, WINDOW_SIZE>(x, y);
     if (!window_grid_opt) {
-        // Hit the edge of the map, not much to be done about it
-        // TODO: figure out what's to be done about it?
-        return;
+        // Hit the edge of the map, unable to create polar histogram
+        return std::nullopt;
     }
 
     logger_.log_window(*window_grid_opt);
+
     std::array<float, K> sectors;
     SubgridAdapter window(std::move(*window_grid_opt));
 
@@ -211,10 +239,7 @@ void VFHAgent::step(float delta_t)
         smoothed_sectors.at(i) = h_prime;
     }
 
-    logger_.log_polar_histogram(smoothed_sectors);
-
-    // TODO: remove after testing
-    body_->SetLinearVelocity({0.0f, 1.0f});
+    return { smoothed_sectors };
 }
 
 } // namespace just

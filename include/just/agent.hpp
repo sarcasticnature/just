@@ -91,6 +91,9 @@ private:
     HistogramGrid grid_;
     UltrasonicArray sensor_;
     Logger logger_;
+
+    void sense();
+    std::optional<std::array<float, K>> create_polar_histogram();
 };
 
 } // namespace just
