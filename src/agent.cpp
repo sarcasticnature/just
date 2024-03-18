@@ -1,6 +1,5 @@
 #include <string_view>
 #include <exception>
-#include <iostream> // TODO: remove
 
 #include "just/agent.hpp"
 
@@ -191,7 +190,6 @@ void VFHAgent::step(float delta_t)
     logger_.log_steering(angle, speed);
 
     // TODO: remove after testing
-    //body_->SetLinearVelocity({0.0f, 1.0f});
     while (angle > M_PI) {
         angle -= 2 * M_PI;
     }
@@ -297,11 +295,9 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
 
     float theta;    // output steering angle
     bool target_in_valley = polar_histogram.at(k_target) <= valley_threshold_;
-    std::cout << "target_in_valley = " << std::boolalpha << target_in_valley << std::endl;
 
     if (target_in_valley) {
         theta = k_target * ALPHA;
-        std::cout << "theta = " << theta << std::endl;
     } else {
         // Determine the start/end sectors of the 'selected valley'
         // This gets a bit messy as there are a lot of edge cases... TODO: improve?
@@ -331,8 +327,6 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
 
         size_t k_n, k_f;
         if (distance_l <= distance_r) {
-            std::cout << "L: ";
-            std::cout << l << " ";
             k_n = k_f = l;
 
             do {
@@ -342,12 +336,10 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
             k_f = k_f != K - 1 ? k_f + 1 : 0;
 
             if (k_f <= k_n) {
-                std::cout << "TOP" << std::endl;
                 k_f = k_n - k_f < S_MAX ? k_f : k_n - S_MAX;
                 float idx = (k_f + k_n) / 2.0;
                 theta = idx * ALPHA;
             } else {
-                std::cout << "BOTTOM" << std::endl;
                 // TODO: clean this up if possible
                 if (k_n + K - k_f > S_MAX) {
                     int tmp = k_n - S_MAX;
@@ -366,7 +358,6 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
                 theta = idx * ALPHA;    // TODO: this could put theta >= 2*PI
             }
         } else {
-            std::cout << "R" << std::endl;
             k_n = k_f = r;
 
             do {
@@ -376,12 +367,10 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
             k_f = k_f != 0 ? k_f - 1 : K - 1;
 
             if (k_f >= k_n) {
-                std::cout << "TOP" << std::endl;
                 k_f = k_f - k_n < S_MAX ? k_f : k_n + S_MAX;
                 float idx = (k_f + k_n) / 2.0;
                 theta = idx * ALPHA;
             } else {
-                std::cout << "BOTTOM" << std::endl;
                 // TODO: clean this up if possible
                 if (k_f + K - k_n > S_MAX) {
                     k_f = (k_n + S_MAX) % K;
