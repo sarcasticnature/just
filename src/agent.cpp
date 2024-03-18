@@ -191,7 +191,12 @@ void VFHAgent::step(float delta_t)
     logger_.log_steering(angle, speed);
 
     // TODO: remove after testing
-    body_->SetLinearVelocity({0.0f, 1.0f});
+    //body_->SetLinearVelocity({0.0f, 1.0f});
+    while (angle > M_PI) {
+        angle -= 2 * M_PI;
+    }
+    b2Vec2 vel{2 * std::cos(angle), 2 * std::sin(angle)};
+    body_->SetLinearVelocity(vel);
 }
 
 void VFHAgent::sense()
@@ -326,7 +331,8 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
 
         size_t k_n, k_f;
         if (distance_l <= distance_r) {
-            std::cout << "L" << std::endl;
+            std::cout << "L: ";
+            std::cout << l << " ";
             k_n = k_f = l;
 
             do {
@@ -336,10 +342,20 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
             k_f = k_f != K - 1 ? k_f + 1 : 0;
 
             if (k_f <= k_n) {
+                std::cout << "TOP" << std::endl;
+                k_f = k_n - k_f < S_MAX ? k_f : k_n - S_MAX;
                 float idx = (k_f + k_n) / 2.0;
                 theta = idx * ALPHA;
             } else {
+                std::cout << "BOTTOM" << std::endl;
                 // TODO: clean this up if possible
+                if (k_n + K - k_f > S_MAX) {
+                    int tmp = k_n - S_MAX;
+                    while (tmp < 0) {
+                        tmp += K;
+                    }
+                    k_f = tmp;
+                }
                 // magnitude of the averaged distance from k_target (direction is negative)
                 float idx = (distance_l + 1 + (K - 1) - k_f) / 2.0;
                 idx = k_target - idx;
@@ -360,10 +376,16 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
             k_f = k_f != 0 ? k_f - 1 : K - 1;
 
             if (k_f >= k_n) {
+                std::cout << "TOP" << std::endl;
+                k_f = k_f - k_n < S_MAX ? k_f : k_n + S_MAX;
                 float idx = (k_f + k_n) / 2.0;
                 theta = idx * ALPHA;
             } else {
+                std::cout << "BOTTOM" << std::endl;
                 // TODO: clean this up if possible
+                if (k_f + K - k_n > S_MAX) {
+                    k_f = (k_n + S_MAX) % K;
+                }
                 float idx = (distance_r * 2 + 1 + k_f) / 2.0;
                 idx = k_target + idx;
                 if (idx > K - 1) {
