@@ -45,8 +45,8 @@ bool HistogramGrid::add_percept(int x0, int y0, float theta, float distance, boo
         return true;
     }
 
-    int x1 = std::round(distance * std::cos(theta));
-    int y1 = std::round(distance * std::sin(theta));
+    int x1 = x0 + std::round(distance * std::cos(theta));
+    int y1 = y0 + std::round(distance * std::sin(theta));
 
     // TODO: double bounds checks... not sure it really matters though
     if (!within_bounds(x1, y1)) {
@@ -374,6 +374,7 @@ TEST_CASE("HistogramGrid.add_percept") {
 TEST_CASE("HistogramGrid.subgrid") {
     just::HistogramGrid grid(10,10);
     grid.add_percept(0, 0, 0.0, 3.0, true);
+    REQUIRE(grid.at(3,0) == just::HistogramGrid::CV_INC);
 
     SUBCASE("Invalid subgrids") {
         auto subgrid_opt_0 = grid.subgrid<100,100>(0,0); // NOLINT (not sure why this is needed)
@@ -401,6 +402,14 @@ TEST_CASE("HistogramGrid.subgrid") {
 
         auto subgrid = subgrid_opt.value(); // NOLINT (not sure why this is needed)
         REQUIRE(std::all_of(subgrid.begin(), subgrid.end(), [](uint8_t cv) { return cv == 0; }));
+    }
+
+    SUBCASE("Non-empty subgrid") {
+        auto subgrid_opt = grid.subgrid<6,6>(0,0);
+        REQUIRE(subgrid_opt != std::nullopt);
+
+        auto subgrid = subgrid_opt.value(); // NOLINT (not sure why this is needed)
+        REQUIRE(subgrid.at(2 * 6 + 5) == just::HistogramGrid::CV_INC);
     }
 
     // TODO: add more test cases

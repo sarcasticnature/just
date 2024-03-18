@@ -18,11 +18,11 @@ name = "jerry"
 type = "vfh"
 grid = { width = 1000, height = 1000 }
 sensor = { count = 36, range = 50.0 }
-goal = { x = 30.0, y = 0.0 }
+goal = { x = 25.0, y = 10.0 }
 valley_threshold = 10000
 shape = "box"
-width = 4.0
-height = 4.0
-x = 0.0
-y = 1.0
+width = 2.0
+height = 2.0
+x = -10.0
+y = -15.0
 theta = 0.0

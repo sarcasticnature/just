@@ -205,12 +205,17 @@ void VFHAgent::sense()
     int x = std::round(position.x);
     int y = std::round(position.y);
 
+    bool added;
     for (const auto& [distance, angle] : sensor_readings) {
+        added = false;
         if (distance < 0.0) {
-            grid_.add_percept(x, y, angle, sensor_.max_range(), false);
+            added = grid_.add_percept(x, y, angle, sensor_.max_range(), false);
         } else {
-            grid_.add_percept(x, y, angle, distance, true);
+            added = grid_.add_percept(x, y, angle, distance, true);
         }
+        //if (!added) {
+        //    //std::cout << "WARNING: failed to add percept -- angle/dist ==  " << angle << "/" << distance << std::endl;
+        //}
     }
 }
 

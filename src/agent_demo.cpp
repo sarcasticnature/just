@@ -54,10 +54,9 @@ theta = 0.0)";
             return 2;
         }
     } else {
-        config = toml::parse(demo_config);
+        return 1;
+        //config = toml::parse(demo_config);
     }
-
-    //std::cout << "TOML config is:\n\n" << config << std::endl;
 
     int width = config["world"]["width"].value_or(1000);
     int height = config["world"]["height"].value_or(1000);
@@ -97,13 +96,22 @@ theta = 0.0)";
     b2BodyDef obstacle_body_def;
     obstacle_body_def.type = b2_staticBody;
     obstacle_body_def.position.Set(15.0, 0.0);
-    b2Body* obstacle_body = world->CreateBody(&obstacle_body_def);
+    b2Body* obstacle_body_1 = world->CreateBody(&obstacle_body_def);
 
     b2PolygonShape obstacle_shape;
     obstacle_shape.SetAsBox(5.0, 10.0);
     b2FixtureDef obstacle_fixture_def;
     obstacle_fixture_def.shape = &obstacle_shape;
-    obstacle_body->CreateFixture(&obstacle_fixture_def);
+    obstacle_body_1->CreateFixture(&obstacle_fixture_def);
+
+    obstacle_body_def.position.Set(-15.0, 0.0);
+    b2Body* obstacle_body_2 = world->CreateBody(&obstacle_body_def);
+    obstacle_body_2->CreateFixture(&obstacle_fixture_def);
+
+    obstacle_body_def.position.Set(0.0, -30.0);
+    b2Body* obstacle_body_3 = world->CreateBody(&obstacle_body_def);
+    obstacle_shape.SetAsBox(25.0, 2.5);
+    obstacle_body_3->CreateFixture(&obstacle_fixture_def);
 
     //float theta = 0.0;
     b2Vec2 pos;
@@ -122,9 +130,20 @@ theta = 0.0)";
         DrawText(txt, (width - txt_width) / 2.0, 0, 36, GRAY);
 
         // TODO: replace with the goal in the config file
-        DrawCircle(width / 2.0 + scale * 30.0, height / 2.0, 0.5 * scale, GREEN);
-        Rectangle rectangle{width / 2.0 + scale * 15.0, height / 2.0, 5.0 * 2.0f * scale, 10.0 * 2.0f * scale};
-        DrawRectanglePro(rectangle, {5.0 * scale, 10.0 * scale}, 0.0, WHITE);
+        DrawCircle(width / 2.0 + scale * 25.0, height / 2.0 - scale * 10.0, 0.5 * scale, GREEN);
+
+        // TODO: replace with the obstacle(s) in the config file
+        Rectangle rectangle{width / 2.0f + scale * 15.0f, height / 2.0f, 5.0f * 2.0f * scale, 10.0f * 2.0f * scale};
+        DrawRectanglePro(rectangle, {5.0f * scale, 10.0f * scale}, 0.0f, WHITE);
+
+        rectangle.x = width / 2.0f + scale * -15.0f;
+        DrawRectanglePro(rectangle, {5.0f * scale, 10.0f * scale}, 0.0f, WHITE);
+
+        rectangle.x = width / 2.0f + scale * 0.0f;
+        rectangle.y = height / 2.0f - scale * -30.0f;
+        rectangle.width = 25.0f * 2.0f * scale;
+        rectangle.height = 2.5f * 2.0f * scale;
+        DrawRectanglePro(rectangle, {25.0f * scale, 2.5f * scale}, 0.0f, WHITE);
 
         for (auto it = agents.cbegin(); it != agents.cend(); ++it) {
             const auto body = (*it)->get_body();

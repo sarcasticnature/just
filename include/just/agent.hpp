@@ -47,16 +47,16 @@ public:
     // Constants for the VFH equations
     static constexpr size_t WINDOW_SIZE = 100;
     static constexpr size_t WINDOW_SIZE_SQUARED = WINDOW_SIZE * WINDOW_SIZE;
-    static constexpr int ALPHA_DEG = 10;    // TODO: reduce to 5 after testing
+    static constexpr int ALPHA_DEG = 5;    // TODO: reduce to 5 after testing
     static constexpr float ALPHA = ALPHA_DEG * M_PI / 180.0;
     static constexpr int K = 360 / ALPHA_DEG;   // number of sectors
 
-    static constexpr float B = 1.0;
+    static constexpr float B = 2.0;
     // NOTE: std::sqrt isn't constexpr until C++26, using a hardcoded sqrt(2) instead
     static constexpr float A = B * 1.414213562 * (WINDOW_SIZE - 1) / 2.0;
     static constexpr int L = 5;         // TODO: tune this (polar histogram smoothing, 5 in paper)
 
-    static constexpr size_t S_MAX = 10; // TODO: tune this (selected valley size, 18 in the paper)
+    static constexpr size_t S_MAX = 18; // TODO: tune this (selected valley size, 18 in the paper)
 
 
     VFHAgent(const toml::table& config, b2World* world);
