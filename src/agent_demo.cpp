@@ -17,17 +17,16 @@ int main(int argc, char** argv)
 height = 1000
 width = 1000
 scale = 10.0
-fps = 60
+fps = 100
 
 [[agents]]
 name = "tom"
-type = "vfh"
-grid = { width = 1000, height = 1000 }
-sensor = { count = 8, range = 5.0 }
-color = "red"
+type = "patrol"
+waypoint = { x = 10.0, y = 0.0 }
+speed = 1.0
 shape = "circle"
 radius = 2.0
-x = 5.0
+x = -10.0
 y = 0.0
 theta = 0.0
 
@@ -35,15 +34,15 @@ theta = 0.0
 name = "jerry"
 type = "vfh"
 grid = { width = 1000, height = 1000 }
-sensor = { count = 8, range = 5.0 }
-color = "red"
+sensor = { count = 36, range = 50.0 }
+goal = { x = 0.0, y = 10.0 }
+valley_threshold = 10000
 shape = "box"
 width = 4.0
 height = 4.0
-x = 5.01
-y = 10.0
-theta = 0.25
-    )";
+x = 0.0
+y = -10.0
+theta = 0.0)";
 
     toml::table config;
 
@@ -122,6 +121,8 @@ theta = 0.25
         int txt_width = MeasureText(txt, 36);
         DrawText(txt, (width - txt_width) / 2.0, 0, 36, GRAY);
 
+        // TODO: replace with the goal in the config file
+        DrawCircle(width / 2, height / 2.0 - 10 * scale, 0.5 * scale, GREEN);
 
         for (auto it = agents.cbegin(); it != agents.cend(); ++it) {
             const auto body = (*it)->get_body();
@@ -142,7 +143,7 @@ theta = 0.25
                 Rectangle rectangle{screen_pos.x, screen_pos.y, half_width * 2.0f * scale, half_height * 2.0f * scale};
 
                 DrawRectanglePro(rectangle, {half_width * scale, half_height * scale}, rot, BLUE);
-                DrawRectangleRec({(pos.x - half_width) * scale + width / 2.0f, (-pos.y - half_height) * scale + height / 2.0f, half_width * 2.0f * scale, half_height * 2.0f * scale}, RED);
+                //DrawRectangleRec({(pos.x - half_width) * scale + width / 2.0f, (-pos.y - half_height) * scale + height / 2.0f, half_width * 2.0f * scale, half_height * 2.0f * scale}, RED);
                 //std::cout << "box_pos: " << pos.x << ", " << pos.y << std::endl;
                 //std::cout << "box_rot: " << body->GetAngle() << std::endl;
             }

@@ -33,6 +33,15 @@ VFH (and other older approach(es)) is comparably much easier to implement and re
     * SLAM
     * ?
 
+## The story so far
+A gif of an 'agent' (the blue square) navigating to a goal (green dot) while avoiding a patrolling obstacle (white circle) running in simulation is shown below:
+
+![use your imagination](/doc/demo.gif)
+
+There are many things happening under the hood at this point, but perhaps the most interesting is the first part of the VFH algorithm: transforming the Histogram Grid into polar space.  A plot of the polar histogram at various time steps (from the simulation above) is shown below:
+
+![use your imagination](/doc/plot.png)
+
 ## What's the roadmap looking like?
 This is a _very_ coarse estimation of the roadmap and is subject to change:
 
@@ -43,25 +52,18 @@ This is a _very_ coarse estimation of the roadmap and is subject to change:
 * [ ] Implement VFH
     * [x] perform the first data transformation to a polar histogram grid
     * [ ] perform the second transformation to produce a steering output
-* [ ] Create an 'agent' that
+        * [x] steering angle
+        * [ ] steering speed
+* [x] Create an 'agent' that
     * [x] moves in the world
     * [x] has a perception 'sensor'
     * [x] updates a histogram grid
-    * [ ] utilizes VFH to control its motion
-    * [ ] can be visualized
-* [ ] Create a configurable simulation environment (with obstacles) in which to place agents
+    * [x] utilizes VFH to control its motion
+    * [x] can be visualized
+* [x] Create a configurable simulation environment (with obstacles) in which to place agents
 * [x] Add logging functionality so that the results of a simulation can be replayed and analyzed after the fact
 * [ ] Create compelling visualizations of the system as a whole
 
 Demos may be created along the way to show off bits of code along the way.
 
 Note that the underlying functionality of all the code used in the above should be unit tested using Doctest, with the exception of visualizations and demos (which can be 'tested' visually).
-
-## The story so far
-A gif of an 'agent' (the red square) moving relative to a patrolling obstacle (white circle) running in simulation is shown below:
-
-![use your imagination](/doc/demo.gif)
-
-There are many things happening under the hood at this point, but perhaps the most interesting is the first part of the VFH algorithm: transforming the Histogram Grid into polar space.  A plot of the polar histogram at various time steps is shown below:
-
-![use your imagination](/doc/plot.png)
