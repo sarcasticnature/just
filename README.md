@@ -34,13 +34,17 @@ VFH (and other older approach(es)) is comparably much easier to implement and re
     * ?
 
 ## The story so far
-A gif of an 'agent' (the blue square) navigating to a goal (green dot) while avoiding a patrolling obstacle (white circle) running in simulation is shown below:
+A gif of an 'agent' (the blue square) navigating to a goal (green dot) while avoiding obstacles (white rectangles) running in simulation is shown below:
 
 ![use your imagination](/doc/demo.gif)
 
 There are many things happening under the hood at this point, but perhaps the most interesting is the first part of the VFH algorithm: transforming the Histogram Grid into polar space.  A plot of the polar histogram at various time steps (from the simulation above) is shown below:
 
 ![use your imagination](/doc/plot.png)
+
+These polar histograms are created from the Histogram Grid, a representation of which can be seen below (from the final timestep of the above simulation)
+
+![use your imagination](/doc/map.png)
 
 ## What's the roadmap looking like?
 This is a _very_ coarse estimation of the roadmap and is subject to change:
