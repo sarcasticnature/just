@@ -93,17 +93,17 @@ theta = 0.0)";
         }
     }
 
-    // Ground
-    //b2BodyDef ground_body_def;
-    //ground_body_def.type = b2_staticBody;
-    //ground_body_def.position.Set(0.0, -5.0);
-    //b2Body* ground_body = world->CreateBody(&ground_body_def);
+    // Obstacle
+    b2BodyDef obstacle_body_def;
+    obstacle_body_def.type = b2_staticBody;
+    obstacle_body_def.position.Set(15.0, 0.0);
+    b2Body* obstacle_body = world->CreateBody(&obstacle_body_def);
 
-    //b2EdgeShape ground_shape;
-    //ground_shape.SetTwoSided({-10.0, 0.0}, {10.0, 0.0});
-    //b2FixtureDef ground_fixture_def;
-    //ground_fixture_def.shape = &ground_shape;
-    //ground_body->CreateFixture(&ground_fixture_def);
+    b2PolygonShape obstacle_shape;
+    obstacle_shape.SetAsBox(5.0, 10.0);
+    b2FixtureDef obstacle_fixture_def;
+    obstacle_fixture_def.shape = &obstacle_shape;
+    obstacle_body->CreateFixture(&obstacle_fixture_def);
 
     //float theta = 0.0;
     b2Vec2 pos;
@@ -122,7 +122,9 @@ theta = 0.0)";
         DrawText(txt, (width - txt_width) / 2.0, 0, 36, GRAY);
 
         // TODO: replace with the goal in the config file
-        DrawCircle(width / 2, height / 2.0 - 10 * scale, 0.5 * scale, GREEN);
+        DrawCircle(width / 2.0 + scale * 30.0, height / 2.0, 0.5 * scale, GREEN);
+        Rectangle rectangle{width / 2.0 + scale * 15.0, height / 2.0, 5.0 * 2.0f * scale, 10.0 * 2.0f * scale};
+        DrawRectanglePro(rectangle, {5.0 * scale, 10.0 * scale}, 0.0, WHITE);
 
         for (auto it = agents.cbegin(); it != agents.cend(); ++it) {
             const auto body = (*it)->get_body();

@@ -240,6 +240,9 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
         y_i = offset + i - (WINDOW_SIZE / 2);
         for (size_t j = 0; j < WINDOW_SIZE; ++j) {
             x_j = offset + j - (WINDOW_SIZE / 2);
+            if (x_j == 0 && y_i == 0) {
+                continue;
+            }
             beta = std::atan2(y_i, x_j);
             while (beta < 0.0) {
                 beta += 2 * M_PI;
