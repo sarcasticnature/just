@@ -243,7 +243,7 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
         logger_->log_window(*window_grid_opt);
     }
 
-    std::array<float, K> sectors;
+    std::array<float, K> sectors{};
     SubgridAdapter window(std::move(*window_grid_opt));
 
     // construct the polar histogram
