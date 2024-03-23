@@ -16,6 +16,7 @@ fps = 100
 [[agents]]
 name = "jerry"
 type = "vfh"
+loging = true
 grid = { width = 1000, height = 1000 }
 sensor = { count = 36, range = 50.0 }
 goal = { x = 25.0, y = 10.0 }

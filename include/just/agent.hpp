@@ -2,6 +2,7 @@
 #define __JUST__AGENT_HPP__
 
 #include <cmath>
+#include <memory>
 
 #include "box2d/box2d.h"
 #include "toml++/toml.hpp"
@@ -90,7 +91,7 @@ private:
         void log_full_grid(const HistogramGrid& grid);
         void log_steering(float angle, float speed);
     private:
-        HighFive::File file_;
+        std::unique_ptr<HighFive::File> file_;
         size_t steering_idx_{0};
     };
 
@@ -102,7 +103,7 @@ private:
 
     HistogramGrid grid_;
     UltrasonicArray sensor_;
-    Logger logger_;
+    std::uniqe_ptr<Logger> logger_;
     b2Vec2 goal_;
     float valley_threshold_;
 

@@ -1,5 +1,6 @@
 #include <string_view>
 #include <exception>
+#include <filesystem>
 
 #include "just/agent.hpp"
 
@@ -86,48 +87,54 @@ VFHAgent::VFHAgent(const toml::table& config, b2World* world)
       sensor_(*config["sensor"]["count"].value<unsigned>(),
               *config["sensor"]["range"].value<float>(),
               body_),
-      logger_("/tmp/just/" + *config["name"].value<std::string>() + "/foo.h5",
-              grid_.height() * grid_.width()),
       valley_threshold_(*config["valley_threshold"].value<float>())
 {
+    if (config["logging"].value_or(true)) {
+        std::string filename = "/tmp/just/" + *config["name"].value<std::string>() + "/foo.h5";
+        logger_ = std::make_unique<Logger>(filename, grid_.height() * grid_.width());
+    }
     goal_ = {*config["goal"]["x"].value<float>(), *config["goal"]["y"].value<float>()};
 }
 
 
 VFHAgent::Logger::Logger(std::string filename, unsigned grid_size)
-    : file_(filename, HighFive::File::OpenOrCreate | HighFive::File::Truncate)
 {
+    std::filesystem::path path(filename);
+    std::filesystem::create_directories(path.parent_path());
+
+    unsigned file_opts = HighFive::File::OpenOrCreate | HighFive::File::Truncate;
+    file_ = std::make_unique<HighFive::File>(filename, file_opts);
+
     // TODO: remove hardcoding
-    // TODO: create directory if it doesn't already exist
     HighFive::DataSpace polar_histogram_dataspace({K, 1}, {K, HighFive::DataSpace::UNLIMITED});
     HighFive::DataSetCreateProps polar_histogram_props;
     polar_histogram_props.add(HighFive::Chunking(std::vector<hsize_t>{K, 1}));
-    file_.createDataSet("/vfh_agent/polar_histogram",
-                        polar_histogram_dataspace,
-                        HighFive::create_datatype<float>(),
-                        polar_histogram_props);
+    file_->createDataSet("/vfh_agent/polar_histogram",
+                         polar_histogram_dataspace,
+                         HighFive::create_datatype<float>(),
+                         polar_histogram_props);
 
-    file_.createDataSet("/vfh_agent/window_histogram",
-                        {WINDOW_SIZE_SQUARED},
-                        HighFive::create_datatype<uint8_t>());
+    file_->createDataSet("/vfh_agent/window_histogram",
+                         {WINDOW_SIZE_SQUARED},
+                         HighFive::create_datatype<uint8_t>());
 
-    file_.createDataSet("/vfh_agent/full_histogram",
-                        {grid_size},
-                        HighFive::create_datatype<uint8_t>());
+    file_->createDataSet("/vfh_agent/full_histogram",
+                         {grid_size},
+                         HighFive::create_datatype<uint8_t>());
 
     HighFive::DataSpace angle_dataspace({100}, {HighFive::DataSpace::UNLIMITED});
     HighFive::DataSetCreateProps angle_props;
     angle_props.add(HighFive::Chunking(std::vector<hsize_t>{100}));
-    file_.createDataSet("/vfh_agent/steering_angle",
-                        angle_dataspace,
-                        HighFive::create_datatype<float>(),
-                        angle_props);
+    file_->createDataSet("/vfh_agent/steering_angle",
+                         angle_dataspace,
+                         HighFive::create_datatype<float>(),
+                         angle_props);
     // TODO: log speed;
 }
 
 void VFHAgent::Logger::log_polar_histogram(std::array<float, K> polar_histogram)
 {
-    auto dataset = file_.getDataSet("/vfh_agent/polar_histogram");
+    auto dataset = file_->getDataSet("/vfh_agent/polar_histogram");
     auto dims = dataset.getDimensions();
     dims.at(1) += 1;
     dataset.resize(dims);
@@ -136,13 +143,13 @@ void VFHAgent::Logger::log_polar_histogram(std::array<float, K> polar_histogram)
 
 void VFHAgent::Logger::log_window(std::array<uint8_t, WINDOW_SIZE_SQUARED> window)
 {
-    auto dataset = file_.getDataSet("/vfh_agent/window_histogram");
+    auto dataset = file_->getDataSet("/vfh_agent/window_histogram");
     dataset.write(window);
 }
 
 void VFHAgent::Logger::log_full_grid(const HistogramGrid& grid)
 {
-    auto dataset = file_.getDataSet("/vfh_agent/full_histogram");
+    auto dataset = file_->getDataSet("/vfh_agent/full_histogram");
     dataset.write(grid.data());
 }
 
@@ -151,7 +158,7 @@ void VFHAgent::Logger::log_steering(float angle, float speed)
     // TODO: log speed;
     (void)speed;
 
-    auto dataset = file_.getDataSet("/vfh_agent/steering_angle");
+    auto dataset = file_->getDataSet("/vfh_agent/steering_angle");
     auto dims = dataset.getDimensions();
     if (dims.at(0) <= steering_idx_) {
         dims.at(0) += 100;
@@ -170,7 +177,9 @@ void VFHAgent::step(float delta_t)
     (void)delta_t;
 
     sense();
-    logger_.log_full_grid(grid_);
+    if (logger_) {
+        logger_->log_full_grid(grid_);
+    }
 
     auto polar_histogram_opt = create_polar_histogram();
     if (!polar_histogram_opt) {
@@ -183,11 +192,15 @@ void VFHAgent::step(float delta_t)
         return;
     }
 
-    logger_.log_polar_histogram(*polar_histogram_opt);
+    if (logger_) {
+        logger_->log_polar_histogram(*polar_histogram_opt);
+    }
 
     auto [angle, speed] = compute_steering(*polar_histogram_opt);
 
-    logger_.log_steering(angle, speed);
+    if (logger_) {
+        logger_->log_steering(angle, speed);
+    }
 
     // TODO: remove after testing
     while (angle > M_PI) {
@@ -205,17 +218,12 @@ void VFHAgent::sense()
     int x = std::round(position.x);
     int y = std::round(position.y);
 
-    bool added;
     for (const auto& [distance, angle] : sensor_readings) {
-        added = false;
         if (distance < 0.0) {
-            added = grid_.add_percept(x, y, angle, sensor_.max_range(), false);
+            grid_.add_percept(x, y, angle, sensor_.max_range(), false);
         } else {
-            added = grid_.add_percept(x, y, angle, distance, true);
+            grid_.add_percept(x, y, angle, distance, true);
         }
-        //if (!added) {
-        //    //std::cout << "WARNING: failed to add percept -- angle/dist ==  " << angle << "/" << distance << std::endl;
-        //}
     }
 }
 
@@ -231,7 +239,9 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
         return std::nullopt;
     }
 
-    logger_.log_window(*window_grid_opt);
+    if (logger_) {
+        logger_->log_window(*window_grid_opt);
+    }
 
     std::array<float, K> sectors;
     SubgridAdapter window(std::move(*window_grid_opt));
