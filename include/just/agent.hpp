@@ -103,7 +103,7 @@ private:
 
     HistogramGrid grid_;
     UltrasonicArray sensor_;
-    std::uniqe_ptr<Logger> logger_;
+    std::unique_ptr<Logger> logger_;
     b2Vec2 goal_;
     float valley_threshold_;
 
