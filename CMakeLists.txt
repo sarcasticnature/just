@@ -92,6 +92,9 @@ target_link_libraries(grid_demo PRIVATE just ${just_deps})
 add_executable(agent_demo src/agent_demo.cpp)
 target_link_libraries(agent_demo PRIVATE just ${just_deps})
 
+add_executable(swarm_demo src/swarm.cpp)
+target_link_libraries(swarm_demo PRIVATE just ${just_deps})
+
 if(JUST_BUILD_TESTS)
     enable_testing()
     add_executable(tests test/doctest_main.cpp ${just_srcs})

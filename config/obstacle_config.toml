@@ -17,7 +17,7 @@ fps = 100
 name = "jerry"
 type = "vfh"
 grid = { width = 1000, height = 1000 }
-sensor = { count = 36, range = 50.0 }
+sensor = { count = 24, range = 25.0 }
 goal = { x = 25.0, y = 10.0 }
 valley_threshold = 10000
 shape = "box"

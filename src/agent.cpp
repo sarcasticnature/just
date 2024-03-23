@@ -170,7 +170,7 @@ void VFHAgent::step(float delta_t)
     (void)delta_t;
 
     sense();
-    logger_.log_full_grid(grid_);
+    //logger_.log_full_grid(grid_);
 
     auto polar_histogram_opt = create_polar_histogram();
     if (!polar_histogram_opt) {
@@ -183,11 +183,11 @@ void VFHAgent::step(float delta_t)
         return;
     }
 
-    logger_.log_polar_histogram(*polar_histogram_opt);
+    //logger_.log_polar_histogram(*polar_histogram_opt);
 
     auto [angle, speed] = compute_steering(*polar_histogram_opt);
 
-    logger_.log_steering(angle, speed);
+    //logger_.log_steering(angle, speed);
 
     // TODO: remove after testing
     while (angle > M_PI) {
@@ -231,7 +231,7 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
         return std::nullopt;
     }
 
-    logger_.log_window(*window_grid_opt);
+    //logger_.log_window(*window_grid_opt);
 
     std::array<float, K> sectors;
     SubgridAdapter window(std::move(*window_grid_opt));

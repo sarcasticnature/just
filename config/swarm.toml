@@ -1,0 +1,257 @@
+[world]
+height = 1000
+width = 1000
+scale = 10.0
+fps = 100
+
+[[agents]]
+name = "1"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = 50.0
+y = 0.0
+theta = 0.0
+
+[[agents]]
+name = "2"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = 0.0
+y = 50.0
+theta = 0.0
+
+[[agents]]
+name = "3"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = -50.0
+y = 0.0
+theta = 0.0
+
+[[agents]]
+name = "4"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = 0.0
+y = -50.0
+theta = 0.0
+
+[[agents]]
+name = "5"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = 50.0
+y = 50.0
+theta = 0.0
+
+[[agents]]
+name = "6"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = -50.0
+y = 50.0
+theta = 0.0
+
+[[agents]]
+name = "7"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = -50.0
+y = -50.0
+theta = 0.0
+
+[[agents]]
+name = "8"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = 50.0
+y = -50.0
+theta = 0.0
+
+[[agents]]
+name = "9"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = 10.0
+y = 0.0
+theta = 0.0
+
+[[agents]]
+name = "10"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = -10.0
+y = 0.0
+theta = 0.0
+
+[[agents]]
+name = "11"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = 20.0
+y = 0.0
+theta = 0.0
+
+[[agents]]
+name = "12"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = 0.0
+y = 20.0
+theta = 0.0
+
+[[agents]]
+name = "13"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = -20.0
+y = 0.0
+theta = 0.0
+
+[[agents]]
+name = "14"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = 0.0
+y = -20.0
+theta = 0.0
+
+[[agents]]
+name = "15"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = 20.0
+y = 20.0
+theta = 0.0
+
+[[agents]]
+name = "16"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = -20.0
+y = 20.0
+theta = 0.0
+
+[[agents]]
+name = "17"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = -20.0
+y = -20.0
+theta = 0.0
+
+[[agents]]
+name = "18"
+type = "vfh"
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 0.0 }
+valley_threshold = 1000
+shape = "box"
+width = 2.0
+height = 2.0
+x = 20.0
+y = -20.0
+theta = 0.0
