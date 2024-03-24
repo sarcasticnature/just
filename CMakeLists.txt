@@ -15,6 +15,8 @@ option(BOX2D_BUILD_UNIT_TESTS OFF)
 
 include(FetchContent)
 
+set(FETCHCONTENT_QUIET FALSE)
+
 FetchContent_Declare(
 	box2d
 	GIT_REPOSITORY https://github.com/erincatto/box2d.git
@@ -85,12 +87,6 @@ target_link_libraries(just PRIVATE ${just_deps})
 
 add_executable(demo src/demo.cpp)
 target_link_libraries(demo PRIVATE just ${just_deps})
-
-add_executable(grid_demo src/grid_demo.cpp)
-target_link_libraries(grid_demo PRIVATE just ${just_deps})
-
-add_executable(agent_demo src/agent_demo.cpp)
-target_link_libraries(agent_demo PRIVATE just ${just_deps})
 
 if(JUST_BUILD_TESTS)
     enable_testing()
