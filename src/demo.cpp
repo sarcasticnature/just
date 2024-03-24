@@ -2,6 +2,7 @@
 #include <vector>
 #include <string_view>
 #include <memory>
+#include <utility>
 
 #include "raylib.h"
 #include "raymath.h"
@@ -10,6 +11,52 @@
 
 #include "just/agent.hpp"
 #include "just/world_model.hpp"
+#include "just/visualization.hpp"
+
+std::pair<std::unique_ptr<just::Agent>, std::unique_ptr<just::Visualization>>
+agent_pair_factory(const toml::table& agent_config, b2World* world, just::Visualizer visualizer)
+{
+    auto agent_type = *agent_config["type"].value<std::string>();
+
+    std::unique_ptr<just::Agent> agent_ptr;
+    if (agent_type == "vfh") {
+        agent_ptr = std::make_unique<just::VFHAgent>(agent_config, world);
+    } else if (agent_type == "patrol") {
+        agent_ptr = std::make_unique<just::PatrolAgent>(agent_config, world);
+    } else {
+        std::cout << "Agent type is invalid, skipping agent: "
+                  << agent_config["name"].value_or("<name missing>")
+                  << std::endl;
+        return {nullptr, nullptr};
+    }
+
+    std::unique_ptr<just::Visualization> viz_ptr;
+    std::string color = agent_config["color"].value_or("blue");
+
+    auto viz_type_opt = agent_config["shape"].value<std::string>();
+    if (!viz_type_opt) {
+        std::cout << "Agent shape is missing, skipping agent: "
+                  << agent_config["name"].value_or("<name missing>")
+                  << std::endl;
+        return {nullptr, nullptr};
+    } else if (*viz_type_opt == "box") {
+        int width = agent_config["width"].value_or(1);
+        int height = agent_config["height"].value_or(1);
+        auto viz = visualizer.create_rectangle_viz(width, height, color);
+        viz_ptr = std::make_unique<just::RectangleViz>(viz);
+    } else if (*viz_type_opt == "circle") {
+        int radius = agent_config["radius"].value_or(1);
+        auto viz = visualizer.create_circle_viz(radius, color);
+        viz_ptr = std::make_unique<just::CircleViz>(viz);
+    } else {
+        std::cout << "Agent shape is invalid, skipping agent: "
+                  << agent_config["name"].value_or("<name missing>")
+                  << std::endl;
+        return {nullptr, nullptr};
+    }
+
+    return {std::move(agent_ptr), std::move(viz_ptr)};
+}
 
 int main(int argc, char** argv)
 {
@@ -30,32 +77,28 @@ int main(int argc, char** argv)
     int width = config["world"]["width"].value_or(1000);
     int height = config["world"]["height"].value_or(1000);
     float scale = config["world"]["scale"].value_or(10.0);
+    int fps = config["world"]["fps"].value_or(100.0);
 
-    InitWindow(width, height, "just");
-    SetTargetFPS(config["world"]["fps"].value_or(60));
+    just::Visualizer visualizer(width, height, scale, fps);
 
     b2World* world = new b2World({0.0, 0.0});
 
     // Agent
-    std::vector<std::unique_ptr<just::Agent>> agents;
+    std::vector<std::pair<std::unique_ptr<just::Agent>, std::unique_ptr<just::Visualization>>> agents;
     if (toml::array* agent_configs = config["agents"].as_array()) {
-        bool success = false;
-        agent_configs->for_each([&agents, &success, &world](toml::table agent_config) {
-            if (auto type_opt = agent_config["type"].value<std::string_view>()) {
-                if (type_opt.value() == "vfh") {
-                    agents.push_back(std::make_unique<just::VFHAgent>(agent_config, world));
-                    success = true;
-                } else if (type_opt.value() == "patrol") {
-                    agents.push_back(std::make_unique<just::PatrolAgent>(agent_config, world));
-                    success = true;
+        agent_configs->for_each([&agents, &world, &visualizer](toml::table agent_config) {
+            if (agent_config["type"]) {
+                auto [agent_ptr, viz_ptr] = agent_pair_factory(agent_config, world, visualizer);
+                if (agent_ptr && viz_ptr) {
+                    agents.emplace_back(std::move(agent_ptr), std::move(viz_ptr));
                 }
             } else {
-                std::cout << "Agent type missing or invalid, skipping agent: "
+                std::cout << "Agent type missing, skipping agent: "
                           << agent_config["name"].value_or("<name missing>")
                           << std::endl;
             }
         });
-        if (success == false) {
+        if (agents.empty()) {
             std::cout << "Error parsing 'agents' array in config, exiting" << std::endl;
             return 3;
         }
@@ -84,15 +127,14 @@ int main(int argc, char** argv)
 
     //float theta = 0.0;
     b2Vec2 pos;
-    float rot;
+    //float rot;    // TODO: use rotation
     while (!WindowShouldClose()) {
         float delta = GetFrameTime();
         world->Step(delta, 10, 8);
 
         //theta = theta >= (2.0 * M_PI) ? 0.0 : theta + 0.1;
 
-        BeginDrawing();
-        ClearBackground(BLACK);
+        visualizer.begin_drawing();
 
         const char* txt = "Hello Just";
         int txt_width = MeasureText(txt, 36);
@@ -114,36 +156,18 @@ int main(int argc, char** argv)
         rectangle.height = 2.5f * 2.0f * scale;
         DrawRectanglePro(rectangle, {25.0f * scale, 2.5f * scale}, 0.0f, WHITE);
 
-        for (auto it = agents.cbegin(); it != agents.cend(); ++it) {
-            const auto body = (*it)->get_body();
-            auto shape = body->GetFixtureList()->GetShape();
-            auto type = shape->GetType();
+        for (const auto& [agent_ptr, viz_ptr] : agents) {
+            const auto body = agent_ptr->get_body();
 
             pos = body->GetPosition();
-            rot = -body->GetAngle() * RAD2DEG;
-            Vector2 screen_pos = {pos.x * scale + width / 2.0f, height / 2.0f - pos.y * scale};
+            //rot = -body->GetAngle() * RAD2DEG;    // TODO: use rotation
+            visualizer.draw_viz(pos.x, pos.y, *viz_ptr);
 
-            if (type == b2Shape::Type::e_circle) {
-                //std::cout << "circle_pos: " << pos.x << ", " << pos.y << std::endl;
-                DrawCircleV(screen_pos, shape->m_radius * scale, WHITE);
-            } else if (type == b2Shape::Type::e_polygon) {
-                auto rectangle_shape = reinterpret_cast<const b2PolygonShape*>(shape);
-                float half_width = std::abs(rectangle_shape->m_vertices[0].x);
-                float half_height = std::abs(rectangle_shape->m_vertices[0].y);
-                Rectangle rectangle{screen_pos.x, screen_pos.y, half_width * 2.0f * scale, half_height * 2.0f * scale};
-
-                DrawRectanglePro(rectangle, {half_width * scale, half_height * scale}, rot, BLUE);
-                //DrawRectangleRec({(pos.x - half_width) * scale + width / 2.0f, (-pos.y - half_height) * scale + height / 2.0f, half_width * 2.0f * scale, half_height * 2.0f * scale}, RED);
-                //std::cout << "box_pos: " << pos.x << ", " << pos.y << std::endl;
-                //std::cout << "box_rot: " << body->GetAngle() << std::endl;
-            }
-            (*it)->step(delta);
+            agent_ptr->step(delta);
         }
 
-        EndDrawing();
+        visualizer.end_drawing();
     }
-
-    CloseWindow();
 
     agents.clear();
     delete world;
