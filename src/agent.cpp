@@ -114,9 +114,15 @@ VFHAgent::Logger::Logger(const std::string& filename, unsigned grid_size)
                          HighFive::create_datatype<float>(),
                          polar_histogram_props);
 
+    HighFive::DataSpace window_histogram_dataspace(
+        {WINDOW_SIZE_SQUARED, 1},
+        {WINDOW_SIZE_SQUARED, HighFive::DataSpace::UNLIMITED});
+    HighFive::DataSetCreateProps window_histogram_props;
+    window_histogram_props.add(HighFive::Chunking(std::vector<hsize_t>{WINDOW_SIZE_SQUARED, 1}));
     file_->createDataSet("/vfh_agent/window_histogram",
-                         {WINDOW_SIZE_SQUARED},
-                         HighFive::create_datatype<uint8_t>());
+                         window_histogram_dataspace,
+                         HighFive::create_datatype<uint8_t>(),
+                         window_histogram_props);
 
     file_->createDataSet("/vfh_agent/full_histogram",
                          {grid_size},
@@ -144,7 +150,10 @@ void VFHAgent::Logger::log_polar_histogram(const std::array<float, K>& polar_his
 void VFHAgent::Logger::log_window(const std::array<uint8_t, WINDOW_SIZE_SQUARED>& window)
 {
     auto dataset = file_->getDataSet("/vfh_agent/window_histogram");
-    dataset.write(window);
+    auto dims = dataset.getDimensions();
+    dims.at(1) += 1;
+    dataset.resize(dims);
+    dataset.select({0, dims.at(1) - 1}, {WINDOW_SIZE_SQUARED, 1}).write(window);
 }
 
 void VFHAgent::Logger::log_full_grid(const HistogramGrid& grid)
