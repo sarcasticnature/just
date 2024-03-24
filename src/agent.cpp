@@ -97,7 +97,7 @@ VFHAgent::VFHAgent(const toml::table& config, b2World* world)
 }
 
 
-VFHAgent::Logger::Logger(std::string filename, unsigned grid_size)
+VFHAgent::Logger::Logger(const std::string& filename, unsigned grid_size)
 {
     std::filesystem::path path(filename);
     std::filesystem::create_directories(path.parent_path());
@@ -132,7 +132,7 @@ VFHAgent::Logger::Logger(std::string filename, unsigned grid_size)
     // TODO: log speed;
 }
 
-void VFHAgent::Logger::log_polar_histogram(std::array<float, K> polar_histogram)
+void VFHAgent::Logger::log_polar_histogram(const std::array<float, K>& polar_histogram)
 {
     auto dataset = file_->getDataSet("/vfh_agent/polar_histogram");
     auto dims = dataset.getDimensions();
@@ -141,7 +141,7 @@ void VFHAgent::Logger::log_polar_histogram(std::array<float, K> polar_histogram)
     dataset.select({0, dims.at(1) - 1}, {K, 1}).write(polar_histogram);
 }
 
-void VFHAgent::Logger::log_window(std::array<uint8_t, WINDOW_SIZE_SQUARED> window)
+void VFHAgent::Logger::log_window(const std::array<uint8_t, WINDOW_SIZE_SQUARED>& window)
 {
     auto dataset = file_->getDataSet("/vfh_agent/window_histogram");
     dataset.write(window);

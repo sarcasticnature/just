@@ -55,9 +55,9 @@ public:
     static constexpr float B = 5.0;
     // NOTE: std::sqrt isn't constexpr until C++26, using a hardcoded sqrt(2) instead
     static constexpr float A = B * 1.414213562 * (WINDOW_SIZE - 1) / 2.0;
-    static constexpr int L = 5;         // TODO: tune this (polar histogram smoothing, 5 in paper)
+    static constexpr int L = 5;         // polar histogram smoothing, 5 in paper
 
-    static constexpr size_t S_MAX = 18; // TODO: tune this (selected valley size, 18 in the paper)
+    static constexpr size_t S_MAX = 18; // selected valley size, 18 in the paper
 
 
     VFHAgent(const toml::table& config, b2World* world);
@@ -85,9 +85,9 @@ private:
     class Logger
     {
     public:
-        Logger(std::string filename, unsigned grid_size);
-        void log_polar_histogram(std::array<float, K> polar_histogram);
-        void log_window(std::array<uint8_t, WINDOW_SIZE_SQUARED> window);
+        Logger(const std::string& filename, unsigned grid_size);
+        void log_polar_histogram(const std::array<float, K>& polar_histogram);
+        void log_window(const std::array<uint8_t, WINDOW_SIZE_SQUARED>& window);
         void log_full_grid(const HistogramGrid& grid);
         void log_steering(float angle, float speed);
     private:
