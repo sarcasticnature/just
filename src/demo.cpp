@@ -14,7 +14,9 @@
 #include "just/visualization.hpp"
 
 std::pair<std::unique_ptr<just::Agent>, std::unique_ptr<just::Visualization>>
-agent_pair_factory(const toml::table& agent_config, b2World* world, just::Visualizer visualizer)
+agent_pair_factory(const toml::table& agent_config,
+                   b2World* world,
+                   const just::Visualizer& visualizer)
 {
     auto agent_type = *agent_config["type"].value<std::string>();
 

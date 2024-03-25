@@ -79,36 +79,36 @@ public:
 
     ~Visualizer()
     {
-        EndDrawing();
+        CloseWindow();
     }
 
-    bool should_close()
+    bool should_close() const
     {
         return WindowShouldClose();
     }
 
-    void begin_drawing()
+    void begin_drawing() const
     {
         BeginDrawing();
         ClearBackground(BLACK);
     }
 
-    void end_drawing()
+    void end_drawing() const
     {
         EndDrawing();
     }
 
-    RectangleViz create_rectangle_viz(float width, float height, const std::string& color)
+    RectangleViz create_rectangle_viz(float width, float height, const std::string& color) const
     {
         return RectangleViz(width, height, string_to_color(color));
     }
 
-    CircleViz create_circle_viz(float radius, const std::string& color)
+    CircleViz create_circle_viz(float radius, const std::string& color) const
     {
         return CircleViz(radius, string_to_color(color));
     }
 
-    void draw_viz(float x, float y, const Visualization& viz)
+    void draw_viz(float x, float y, const Visualization& viz) const
     {
         viz.draw(width_, height_, scale_, x, y);
     }
@@ -118,7 +118,7 @@ private:
     float height_;
     float scale_;
 
-    Color string_to_color(const std::string& color) {
+    Color string_to_color(const std::string& color) const {
         if (color == "red") {
             return RED;
         } else if (color == "blue") {
