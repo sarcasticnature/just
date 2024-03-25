@@ -15,8 +15,8 @@ Agent::Agent(const toml::table& config, b2World* world)
     body_def.angle = config["theta"].value_or(0.0);
     body_ = world->CreateBody(&body_def);
 
-    std::string_view shape = config["shape"].value_or("circle");
-    if (shape == "circle") {
+    std::string_view shape_str = config["shape"].value_or("circle");
+    if (shape_str == "circle") {
         b2CircleShape shape;
         shape.m_radius = config["radius"].value_or(1.0);
 
@@ -25,7 +25,7 @@ Agent::Agent(const toml::table& config, b2World* world)
         fixture_def.density = config["density"].value_or(1.0);
         body_->CreateFixture(&fixture_def);
 
-    } else if (shape == "box") {
+    } else if (shape_str == "box") {
         b2PolygonShape shape;
         shape.SetAsBox(config["width"].value_or(1.0) / 2, config["height"].value_or(1.0) / 2);
 
