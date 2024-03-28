@@ -15,7 +15,12 @@ class Visualization
 public:
     Visualization() = default;
     virtual ~Visualization() = default;
-    virtual void draw(float screen_w, float screen_h, float scale, float x, float y) const = 0;
+    virtual void draw(float screen_w,
+                      float screen_h,
+                      float scale,
+                      float x,
+                      float y,
+                      float theta) const = 0;
 };
 
 struct RectangleViz : public Visualization
@@ -26,7 +31,12 @@ public:
     {
     }
 
-    void draw(float screen_w, float screen_h, float scale, float x, float y) const override
+    void draw(float screen_w,
+              float screen_h,
+              float scale,
+              float x,
+              float y,
+              float theta) const override
     {
         Rectangle rect;
         rect.x = screen_w / 2.0f + scale * x;
@@ -37,7 +47,7 @@ public:
         Vector2 vec;
         vec.x = scale * width_ / 2.0f;
         vec.y = scale * height_ / 2.0f;
-        DrawRectanglePro(rect, vec, 0.0f, color_);
+        DrawRectanglePro(rect, vec, theta, color_);
     }
 
 private:
@@ -54,8 +64,14 @@ public:
     {
     }
 
-    void draw(float screen_w, float screen_h, float scale, float x, float y) const override
+    void draw(float screen_w,
+              float screen_h,
+              float scale,
+              float x,
+              float y,
+              float theta) const override
     {
+        (void)theta;
         Vector2 vec;
         vec.x = screen_w / 2.0 + scale * x;
         vec.y = screen_h / 2.0 - scale * y;
@@ -108,9 +124,9 @@ public:
         return CircleViz(radius, string_to_color(color));
     }
 
-    void draw_viz(float x, float y, const Visualization& viz) const
+    void draw_viz(float x, float y, float theta, const Visualization& viz) const
     {
-        viz.draw(width_, height_, scale_, x, y);
+        viz.draw(width_, height_, scale_, x, y, theta);
     }
 
 private:

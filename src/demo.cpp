@@ -177,14 +177,11 @@ int main(int argc, char** argv)
         });
     }
 
-    //float theta = 0.0;
     b2Vec2 pos;
-    //float rot;    // TODO: use rotation
+    float rot;
     while (!WindowShouldClose()) {
         float delta = GetFrameTime();
         world->Step(delta, 10, 8);
-
-        //theta = theta >= (2.0 * M_PI) ? 0.0 : theta + 0.1;
 
         visualizer.begin_drawing();
 
@@ -193,19 +190,19 @@ int main(int argc, char** argv)
         DrawText(txt, (width - txt_width) / 2.0, 0, 36, GRAY);
 
         for (const auto& [x, y, viz_ptr] : obstacles) {
-            visualizer.draw_viz(x, y, *viz_ptr);
+            visualizer.draw_viz(x, y, 0.0, *viz_ptr);
         }
 
         for (const auto& [x, y, viz_ptr] : markers) {
-            visualizer.draw_viz(x, y, *viz_ptr);
+            visualizer.draw_viz(x, y, 0.0, *viz_ptr);
         }
 
         for (const auto& [agent_ptr, viz_ptr] : agent_pairs) {
             const auto body = agent_ptr->get_body();
 
             pos = body->GetPosition();
-            //rot = -body->GetAngle() * RAD2DEG;    // TODO: use rotation
-            visualizer.draw_viz(pos.x, pos.y, *viz_ptr);
+            rot = -body->GetAngle() * RAD2DEG;
+            visualizer.draw_viz(pos.x, pos.y, rot, *viz_ptr);
 
             agent_ptr->step(delta);
         }

@@ -4,23 +4,15 @@ width = 1000
 scale = 10.0
 fps = 100
 
-#[[obstacles]]
-#color = "white"
-#shape = "box"
-#width = 1.0
-#height = 1.0
-#x = 0.0
-#y = 0.0
-#theta = 0.0
-
 [[agents]]
 name = "tom"
 type = "patrol"
+color = "red"
 waypoint = { x = 10.0, y = 0.0 }
 speed = 1.0
 shape = "circle"
 radius = 2.0
-x = -10.0
+x = -5.0
 y = 0.0
 theta = 0.0
 
