@@ -53,11 +53,11 @@ This is a _very_ coarse estimation of the roadmap and is subject to change:
 * [x] Implement a Histogram Grid for mapping
 * [x] Implement adding perception data (percepts) to said grid (following the method described in the HIMM paper)
 * [x] Create an idealistic 'sensor' that mimics a LIDAR/RADAR/Ultrasonic sensor array, for use in adding percepts to the grid
-* [ ] Implement VFH
+* [x] Implement VFH
     * [x] perform the first data transformation to a polar histogram grid
-    * [ ] perform the second transformation to produce a steering output
+    * [x] perform the second transformation to produce a steering output
         * [x] steering angle
-        * [ ] steering speed
+        * [x] steering speed
 * [x] Create an 'agent' that
     * [x] moves in the world
     * [x] has a perception 'sensor'
@@ -66,8 +66,8 @@ This is a _very_ coarse estimation of the roadmap and is subject to change:
     * [x] can be visualized
 * [x] Create a configurable simulation environment (with obstacles) in which to place agents
 * [x] Add logging functionality so that the results of a simulation can be replayed and analyzed after the fact
-* [ ] Create compelling visualizations of the system as a whole
+* [x] Create compelling visualizations of the system as a whole
 
-Demos may be created along the way to show off bits of code along the way.
+Demos may be created along the way to show off progress.
 
 Note that the underlying functionality of all the code used in the above should be unit tested using Doctest, with the exception of visualizations and demos (which can be 'tested' visually).

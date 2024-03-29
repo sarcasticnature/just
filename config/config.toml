@@ -23,6 +23,7 @@ grid = { width = 1000, height = 1000 }
 sensor = { count = 36, range = 50.0 }
 goal = { x = 0.0, y = 10.0 }
 valley_threshold = 10000
+speed = 5.0
 shape = "box"
 width = 4.0
 height = 4.0

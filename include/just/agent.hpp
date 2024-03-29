@@ -106,6 +106,7 @@ private:
     std::unique_ptr<Logger> logger_;
     b2Vec2 goal_;
     float valley_threshold_;
+    float v_max_;
 
     void sense();
     std::optional<std::array<float, K>> create_polar_histogram();

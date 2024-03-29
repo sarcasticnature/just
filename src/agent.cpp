@@ -87,7 +87,8 @@ VFHAgent::VFHAgent(const toml::table& config, b2World* world)
       sensor_(*config["sensor"]["count"].value<unsigned>(),
               *config["sensor"]["range"].value<float>(),
               body_),
-      valley_threshold_(*config["valley_threshold"].value<float>())
+      valley_threshold_(*config["valley_threshold"].value<float>()),
+      v_max_(config["speed"].value_or(1.0))
 {
     if (config["logging"].value_or(true)) {
         std::string filename = "/tmp/just/" + *config["name"].value<std::string>() + "/foo.h5";
@@ -215,7 +216,8 @@ void VFHAgent::step(float delta_t)
     while (angle > M_PI) {
         angle -= 2 * M_PI;
     }
-    b2Vec2 vel{2 * std::cos(angle), 2 * std::sin(angle)};
+    //b2Vec2 vel{2 * std::cos(angle), 2 * std::sin(angle)};
+    b2Vec2 vel{speed * std::cos(angle), speed * std::sin(angle)};
     body_->SetLinearVelocity(vel);
 }
 
@@ -320,11 +322,11 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
         k_target -= K;
     }
 
-    float theta;    // output steering angle
+    size_t heading;    // sector of the output steering angle
     bool target_in_valley = polar_histogram.at(k_target) <= valley_threshold_;
 
     if (target_in_valley) {
-        theta = k_target * ALPHA;
+        heading = k_target;
     } else {
         // Determine the start/end sectors of the 'selected valley'
         // This gets a bit messy as there are a lot of edge cases... TODO: improve?
@@ -364,8 +366,7 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
 
             if (k_f <= k_n) {
                 k_f = k_n - k_f < S_MAX ? k_f : k_n - S_MAX;
-                float idx = (k_f + k_n) / 2.0;
-                theta = idx * ALPHA;
+                heading = std::round((k_f + k_n) / 2.0);
             } else {
                 // TODO: clean this up if possible
                 if (k_n + K - k_f > S_MAX) {
@@ -376,13 +377,13 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
                     k_f = tmp;
                 }
                 // magnitude of the averaged distance from k_target (direction is negative)
-                float idx = (distance_l + 1 + (K - 1) - k_f) / 2.0;
+                int idx = std::round((distance_l + 1 + (K - 1) - k_f) / 2.0);
                 idx = k_target - idx;
                 if (idx < 0) {
                     // TODO: I think this is always the case, but... whatever
                     idx += K;
                 }
-                theta = idx * ALPHA;    // TODO: this could put theta >= 2*PI
+                heading = idx;
             }
         } else {
             k_n = k_f = r;
@@ -395,25 +396,32 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
 
             if (k_f >= k_n) {
                 k_f = k_f - k_n < S_MAX ? k_f : k_n + S_MAX;
-                float idx = (k_f + k_n) / 2.0;
-                theta = idx * ALPHA;
+                heading = std::round((k_f + k_n) / 2.0);
             } else {
                 // TODO: clean this up if possible
                 if (k_f + K - k_n > S_MAX) {
                     k_f = (k_n + S_MAX) % K;
                 }
-                float idx = (distance_r * 2 + 1 + k_f) / 2.0;
-                idx = k_target + idx;
-                if (idx > K - 1) {
+                heading = std::round((distance_r * 2 + 1 + k_f) / 2.0);
+                heading = k_target + heading;
+                if (heading > K - 1) {
                     // TODO: I think this is always the case, but... whatever
-                    idx -= K;
+                    heading -= K;
                 }
-                theta = idx * ALPHA;    // TODO: could this could put theta >= 2*PI?
             }
         }
     }
 
-    return {theta, 0.0};
+    // h_m is intended to be emperically determined (per the paper).
+    // Here we will simply use the valley threshold as a heuristic to make tuning easier.
+    // Note that the min of h_c and h_m is not needed, as it is not possible for h_c to exceed
+    // the valley threshold in the current implementation
+    //
+    // TODO: determine emperically?
+
+    float v = v_max_ * (1 - polar_histogram.at(heading) / valley_threshold_);
+
+    return {heading * ALPHA, v};
 }
 
 } // namespace just

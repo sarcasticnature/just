@@ -7,18 +7,18 @@ fps = 100
 [[obstacles]]
 color = "white"
 shape = "box"
-width = 10.0
-height = 20.0
-x = 15.0
+width = 5.0
+height = 60.0
+x = 25.0
 y = 0.0
 theta = 0.0
 
 [[obstacles]]
 color = "white"
 shape = "box"
-width = 10.0
-height = 20.0
-x = -15.0
+width = 5.0
+height = 60.0
+x = -25.0
 y = 0.0
 theta = 0.0
 
@@ -31,11 +31,20 @@ x = 0.0
 y = -30.0
 theta = 0.0
 
+[[obstacles]]
+color = "white"
+shape = "box"
+width = 50.0
+height = 5.0
+x = 0.0
+y = 30.0
+theta = 0.0
+
 [[markers]]
 color = "green"
 shape = "circle"
 radius = 0.5
-x = 25.0
+x = 30.0
 y = 10.0
 theta = 0.0
 
