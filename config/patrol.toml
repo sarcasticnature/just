@@ -11,7 +11,7 @@ color = "red"
 waypoint = { x = 10.0, y = 0.0 }
 speed = 1.0
 shape = "circle"
-radius = 2.0
+radius = 3.0
 x = -5.0
 y = 0.0
 theta = 0.0
@@ -20,13 +20,13 @@ theta = 0.0
 name = "jerry"
 type = "vfh"
 grid = { width = 1000, height = 1000 }
-sensor = { count = 36, range = 50.0 }
+sensor = { count = 24, range = 25.0 }
 goal = { x = 0.0, y = 10.0 }
-valley_threshold = 10000
+valley_threshold = 250000
 speed = 5.0
 shape = "box"
-width = 4.0
-height = 4.0
+width = 2.0
+height = 2.0
 x = 0.0
 y = -12.0
 theta = 0.0

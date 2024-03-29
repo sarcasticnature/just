@@ -27,7 +27,7 @@ logging = true
 grid = { width = 1000, height = 1000 }
 sensor = { count = 24, range = 25.0 }
 goal = { x = 0.0, y = 30.0 }
-valley_threshold = 10000
+valley_threshold = 250000
 speed = 5.0
 shape = "box"
 width = 2.0
