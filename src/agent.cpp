@@ -107,7 +107,7 @@ VFHAgent::Logger::Logger(const std::string& filename, unsigned grid_size)
     file_ = std::make_unique<HighFive::File>(filename, file_opts);
 
     // TODO: remove hardcoding
-    HighFive::DataSpace polar_histogram_dataspace({K, 1}, {K, HighFive::DataSpace::UNLIMITED});
+    HighFive::DataSpace polar_histogram_dataspace({K, 0}, {K, HighFive::DataSpace::UNLIMITED});
     HighFive::DataSetCreateProps polar_histogram_props;
     polar_histogram_props.add(HighFive::Chunking(std::vector<hsize_t>{K, 1}));
     file_->createDataSet("/vfh_agent/polar_histogram",
@@ -116,7 +116,7 @@ VFHAgent::Logger::Logger(const std::string& filename, unsigned grid_size)
                          polar_histogram_props);
 
     HighFive::DataSpace window_histogram_dataspace(
-        {WINDOW_SIZE_SQUARED, 1},
+        {WINDOW_SIZE_SQUARED, 0},
         {WINDOW_SIZE_SQUARED, HighFive::DataSpace::UNLIMITED});
     HighFive::DataSetCreateProps window_histogram_props;
     window_histogram_props.add(HighFive::Chunking(std::vector<hsize_t>{WINDOW_SIZE_SQUARED, 1}));
@@ -129,14 +129,17 @@ VFHAgent::Logger::Logger(const std::string& filename, unsigned grid_size)
                          {grid_size},
                          HighFive::create_datatype<uint8_t>());
 
-    HighFive::DataSpace angle_dataspace({100}, {HighFive::DataSpace::UNLIMITED});
-    HighFive::DataSetCreateProps angle_props;
-    angle_props.add(HighFive::Chunking(std::vector<hsize_t>{100}));
-    file_->createDataSet("/vfh_agent/steering_angle",
-                         angle_dataspace,
-                         HighFive::create_datatype<float>(),
-                         angle_props);
-    // TODO: log speed;
+    HighFive::DataSpace odom_dataspace({4, 0}, {4, HighFive::DataSpace::UNLIMITED});
+    HighFive::DataSetCreateProps odom_props;
+    odom_props.add(HighFive::Chunking(std::vector<hsize_t>{4, 1}));
+    auto odom_dataset = file_->createDataSet("/vfh_agent/packed_odometry",
+                                             odom_dataspace,
+                                             HighFive::create_datatype<float>(),
+                                             odom_props);
+    odom_dataset.createAttribute("angle_index", 0);
+    odom_dataset.createAttribute("speed_index", 1);
+    odom_dataset.createAttribute("x_index", 2);
+    odom_dataset.createAttribute("y_index", 3);
 }
 
 void VFHAgent::Logger::log_polar_histogram(const std::array<float, K>& polar_histogram)
@@ -163,18 +166,17 @@ void VFHAgent::Logger::log_full_grid(const HistogramGrid& grid)
     dataset.write(grid.data());
 }
 
-void VFHAgent::Logger::log_steering(float angle, float speed)
+void VFHAgent::Logger::log_odometry(float angle, float speed, float x, float y)
 {
-    // TODO: log speed;
+    // TODO: update this to match
     (void)speed;
 
-    auto dataset = file_->getDataSet("/vfh_agent/steering_angle");
+    auto dataset = file_->getDataSet("/vfh_agent/packed_odometry");
     auto dims = dataset.getDimensions();
-    if (dims.at(0) <= steering_idx_) {
-        dims.at(0) += 100;
-        dataset.resize(dims);
-    }
-    dataset.select({steering_idx_}, {1}).write(angle);
+    dims.at(1) += 1;
+    dataset.resize(dims);
+    std::array<float, 4> packed{angle, speed, x, y};
+    dataset.select({0, dims.at(1) - 1}, {4, 1}).write(packed);
     ++steering_idx_;
 }
 
@@ -209,14 +211,10 @@ void VFHAgent::step(float delta_t)
     auto [angle, speed] = compute_steering(*polar_histogram_opt);
 
     if (logger_) {
-        logger_->log_steering(angle, speed);
+        b2Vec2 position = body_->GetPosition();
+        logger_->log_odometry(angle, speed, position.x, position.y);
     }
 
-    // TODO: remove after testing
-    while (angle > M_PI) {
-        angle -= 2 * M_PI;
-    }
-    //b2Vec2 vel{2 * std::cos(angle), 2 * std::sin(angle)};
     b2Vec2 vel{speed * std::cos(angle), speed * std::sin(angle)};
     body_->SetLinearVelocity(vel);
 }
