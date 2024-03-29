@@ -53,8 +53,17 @@ public:
     static constexpr int K = 360 / ALPHA_DEG;   // number of sectors
 
     static constexpr float B = 500.0;
+    // NOTE: difference from the paper here. Their equation for d_max, and thus 'a', is only
+    // accurate for *odd* window sizes and will cause the magnitude of the obstacle vector to
+    // be negative at the extremes of the window for *even* window sizes.
+    // This causes almost imperceptible errors, but they are errors none the less.
+    //
+    // Using WINDOW_SIZE (not WINDOW_SIZE - 1) causes 'a' to be (ever so) slightly larger
+    // than it needs to be for odd window sizes, but alleviates the more problematic
+    // negative magnitude issue in all cases
+    //
     // NOTE: std::sqrt isn't constexpr until C++26, using a hardcoded sqrt(2) instead
-    static constexpr float A = B * 1.414213562 * (WINDOW_SIZE - 1) / 2.0;
+    static constexpr float A = B * 1.414213562 * WINDOW_SIZE / 2.0;
     static constexpr int L = 5;         // polar histogram smoothing, 5 in paper
 
     static constexpr size_t S_MAX = 18; // selected valley size, 18 in the paper
