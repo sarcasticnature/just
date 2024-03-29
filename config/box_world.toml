@@ -6,6 +6,14 @@ fps = 100
 
 [[obstacles]]
 color = "white"
+shape = "circle"
+radius = 5.0
+x = 0.0
+y = 0.0
+theta = 0.0
+
+[[obstacles]]
+color = "white"
 shape = "box"
 width = 5.0
 height = 60.0
@@ -44,22 +52,22 @@ theta = 0.0
 color = "green"
 shape = "circle"
 radius = 0.5
-x = 30.0
-y = 10.0
+x = 0.0
+y = 15.0
 theta = 0.0
 
 [[agents]]
 name = "jerry"
 type = "vfh"
-loging = true
+logging = true
 grid = { width = 1000, height = 1000 }
 sensor = { count = 24, range = 25.0 }
-goal = { x = 25.0, y = 10.0 }
-valley_threshold = 10000
+goal = { x = 0.0, y = 15.0 }
+valley_threshold = 250000
 speed = 5.0
 shape = "box"
-width = 2.0
-height = 2.0
-x = -10.0
+width = 1.0
+height = 1.0
+x = 0.0
 y = -15.0
 theta = 0.0

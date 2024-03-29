@@ -1,0 +1,37 @@
+[world]
+height = 1000
+width = 1000
+scale = 10.0
+fps = 100
+
+[[obstacles]]
+color = "white"
+shape = "circle"
+radius = 20.0
+x = -5.0
+y = 0.0
+theta = 0.0
+
+[[markers]]
+color = "green"
+shape = "circle"
+radius = 0.5
+x = 0.0
+y = 30.0
+theta = 0.0
+
+[[agents]]
+name = "jerry"
+type = "vfh"
+logging = true
+grid = { width = 1000, height = 1000 }
+sensor = { count = 24, range = 25.0 }
+goal = { x = 0.0, y = 30.0 }
+valley_threshold = 10000
+speed = 5.0
+shape = "box"
+width = 2.0
+height = 2.0
+x = 0.0
+y = -30.0
+theta = 0.0

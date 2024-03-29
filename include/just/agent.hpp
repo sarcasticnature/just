@@ -46,13 +46,13 @@ class VFHAgent : public Agent
 {
 public:
     // Constants for the VFH equations
-    static constexpr size_t WINDOW_SIZE = 50;
+    static constexpr size_t WINDOW_SIZE = 30;
     static constexpr size_t WINDOW_SIZE_SQUARED = WINDOW_SIZE * WINDOW_SIZE;
     static constexpr int ALPHA_DEG = 5;    // TODO: reduce to 5 after testing
     static constexpr float ALPHA = ALPHA_DEG * M_PI / 180.0;
     static constexpr int K = 360 / ALPHA_DEG;   // number of sectors
 
-    static constexpr float B = 5.0;
+    static constexpr float B = 500.0;
     // NOTE: std::sqrt isn't constexpr until C++26, using a hardcoded sqrt(2) instead
     static constexpr float A = B * 1.414213562 * (WINDOW_SIZE - 1) / 2.0;
     static constexpr int L = 5;         // polar histogram smoothing, 5 in paper

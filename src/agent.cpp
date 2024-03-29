@@ -224,8 +224,8 @@ void VFHAgent::sense()
     auto sensor_readings = sensor_.sense_all();
 
     b2Vec2 position = body_->GetPosition();
-    int x = std::round(position.x);
-    int y = std::round(position.y);
+    int x = std::lround(position.x);
+    int y = std::lround(position.y);
 
     for (const auto& [distance, angle] : sensor_readings) {
         if (distance < 0.0) {
@@ -239,8 +239,8 @@ void VFHAgent::sense()
 std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
 {
     b2Vec2 position = body_->GetPosition();
-    int x = std::round(position.x);
-    int y = std::round(position.y);
+    int x = std::lround(position.x);
+    int y = std::lround(position.y);
 
     auto window_grid_opt = grid_.subgrid<WINDOW_SIZE, WINDOW_SIZE>(x, y);
     if (!window_grid_opt) {
@@ -274,7 +274,7 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
             cv = static_cast<float>(window.at(j,i));
             d = std::sqrt(x_j * x_j + y_i * y_i);
             m = cv * cv * (A - B * d);
-            sector_idx = std::round(beta / ALPHA);
+            sector_idx = std::lround(beta / ALPHA);
             if (sector_idx >= K) {
                 sector_idx -= K;
             }
@@ -315,7 +315,7 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
     while (goal_theta < 0.0) {
         goal_theta += 2 * M_PI;
     }
-    size_t k_target = std::round(goal_theta / ALPHA);
+    size_t k_target = std::lround(goal_theta / ALPHA);
     if (k_target >= K) {
         k_target -= K;
     }
@@ -364,24 +364,20 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
 
             if (k_f <= k_n) {
                 k_f = k_n - k_f < S_MAX ? k_f : k_n - S_MAX;
-                heading = std::round((k_f + k_n) / 2.0);
+                heading = std::lround((k_f + k_n) / 2.0);
             } else {
                 // TODO: clean this up if possible
+                size_t wrap = K;
                 if (k_n + K - k_f > S_MAX) {
                     int tmp = k_n - S_MAX;
                     while (tmp < 0) {
                         tmp += K;
                     }
                     k_f = tmp;
+                    // There may no longer be a wrap-around after adjusting k_f, check for that case
+                    wrap = k_f <= k_n ? 0 : K;
                 }
-                // magnitude of the averaged distance from k_target (direction is negative)
-                int idx = std::round((distance_l + 1 + (K - 1) - k_f) / 2.0);
-                idx = k_target - idx;
-                if (idx < 0) {
-                    // TODO: I think this is always the case, but... whatever
-                    idx += K;
-                }
-                heading = idx;
+                heading = std::lround((k_f + k_n + wrap) / 2.0) % K;
             }
         } else {
             k_n = k_f = r;
@@ -394,18 +390,16 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
 
             if (k_f >= k_n) {
                 k_f = k_f - k_n < S_MAX ? k_f : k_n + S_MAX;
-                heading = std::round((k_f + k_n) / 2.0);
+                heading = std::lround((k_f + k_n) / 2.0);
             } else {
                 // TODO: clean this up if possible
+                size_t wrap = K;
                 if (k_f + K - k_n > S_MAX) {
                     k_f = (k_n + S_MAX) % K;
+                    // There may no longer be a wrap-around after adjusting k_f, check for that case
+                    wrap = k_f >= k_n ? 0 : K;
                 }
-                heading = std::round((distance_r * 2 + 1 + k_f) / 2.0);
-                heading = k_target + heading;
-                if (heading > K - 1) {
-                    // TODO: I think this is always the case, but... whatever
-                    heading -= K;
-                }
+                heading = std::lround((k_n + wrap + k_f) / 2.0) % K;
             }
         }
     }
@@ -417,7 +411,7 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
     //
     // TODO: determine emperically?
 
-    float v = v_max_ * (1 - polar_histogram.at(heading) / valley_threshold_);
+    float v = v_max_ * (1 - polar_histogram.at(heading) / (valley_threshold_ * 1.1));
 
     return {heading * ALPHA, v};
 }
