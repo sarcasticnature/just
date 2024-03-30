@@ -38,7 +38,7 @@ UltrasonicArray::SensorReading UltrasonicArray::sense_one()
     world->RayCast(&cb, body_->GetPosition(), world_endpoint);
 
     reading.distance = cb.min_distance <= max_range() ? cb.min_distance : -1.0;
-    reading.angle = beam.relative_angle;
+    reading.angle = beam.relative_angle + body_->GetAngle();
 
     return reading;
 }
