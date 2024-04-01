@@ -66,8 +66,8 @@ goal = { x = 0.0, y = 15.0 }
 valley_threshold = 250000
 speed = 5.0
 shape = "box"
-width = 1.0
-height = 1.0
+width = 2.0
+height = 2.0
 x = 0.0
 y = -15.0
 theta = 0.0

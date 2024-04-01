@@ -4,12 +4,20 @@ width = 1000
 scale = 10.0
 fps = 100
 
+[[markers]]
+shape = "circle"
+radius = 0.5
+color = "green"
+x = 0.0
+y = 10.0
+theta = 0.0
+
 [[agents]]
 name = "tom"
 type = "patrol"
 color = "red"
 waypoint = { x = 10.0, y = 0.0 }
-speed = 1.0
+speed = 2.0
 shape = "circle"
 radius = 3.0
 x = -5.0

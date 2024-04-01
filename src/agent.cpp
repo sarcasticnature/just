@@ -129,17 +129,17 @@ VFHAgent::Logger::Logger(const std::string& filename, unsigned grid_size)
                          {grid_size},
                          HighFive::create_datatype<uint8_t>());
 
-    HighFive::DataSpace odom_dataspace({4, 0}, {4, HighFive::DataSpace::UNLIMITED});
-    HighFive::DataSetCreateProps odom_props;
-    odom_props.add(HighFive::Chunking(std::vector<hsize_t>{4, 1}));
-    auto odom_dataset = file_->createDataSet("/vfh_agent/packed_odometry",
-                                             odom_dataspace,
+    HighFive::DataSpace packed_dataspace({4, 0}, {4, HighFive::DataSpace::UNLIMITED});
+    HighFive::DataSetCreateProps packed_props;
+    packed_props.add(HighFive::Chunking(std::vector<hsize_t>{4, 1}));
+    auto packed_dataset = file_->createDataSet("/vfh_agent/packed_motion",
+                                             packed_dataspace,
                                              HighFive::create_datatype<float>(),
-                                             odom_props);
-    odom_dataset.createAttribute("angle_index", 0);
-    odom_dataset.createAttribute("speed_index", 1);
-    odom_dataset.createAttribute("x_index", 2);
-    odom_dataset.createAttribute("y_index", 3);
+                                             packed_props);
+    packed_dataset.createAttribute("angle_index", 0);
+    packed_dataset.createAttribute("speed_index", 1);
+    packed_dataset.createAttribute("x_index", 2);
+    packed_dataset.createAttribute("y_index", 3);
 }
 
 void VFHAgent::Logger::log_polar_histogram(const std::array<float, K>& polar_histogram)
@@ -166,12 +166,12 @@ void VFHAgent::Logger::log_full_grid(const HistogramGrid& grid)
     dataset.write(grid.data());
 }
 
-void VFHAgent::Logger::log_odometry(float angle, float speed, float x, float y)
+void VFHAgent::Logger::log_motion(float angle, float speed, float x, float y)
 {
     // TODO: update this to match
     (void)speed;
 
-    auto dataset = file_->getDataSet("/vfh_agent/packed_odometry");
+    auto dataset = file_->getDataSet("/vfh_agent/packed_motion");
     auto dims = dataset.getDimensions();
     dims.at(1) += 1;
     dataset.resize(dims);
@@ -212,7 +212,7 @@ void VFHAgent::step(float delta_t)
 
     if (logger_) {
         b2Vec2 position = body_->GetPosition();
-        logger_->log_odometry(angle, speed, position.x, position.y);
+        logger_->log_motion(angle, speed, position.x, position.y);
     }
 
     b2Vec2 vel{speed * std::cos(angle), speed * std::sin(angle)};

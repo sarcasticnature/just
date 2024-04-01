@@ -98,7 +98,7 @@ private:
         void log_polar_histogram(const std::array<float, K>& polar_histogram);
         void log_window(const std::array<uint8_t, WINDOW_SIZE_SQUARED>& window);
         void log_full_grid(const HistogramGrid& grid);
-        void log_odometry(float angle, float speed, float x, float y);
+        void log_motion(float angle, float speed, float x, float y);
     private:
         std::unique_ptr<HighFive::File> file_;
         size_t steering_idx_{0};
