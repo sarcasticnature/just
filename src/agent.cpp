@@ -7,6 +7,40 @@
 namespace just
 {
 
+// See: https://mazzo.li/posts/vectorized-atan2.html for details
+float jtan_scalar_approx(float x)
+{
+    float a1  =  0.99997726f;
+    float a3  = -0.33262347f;
+    float a5  =  0.19354346f;
+    float a7  = -0.11643287f;
+    float a9  =  0.05265332f;
+    float a11 = -0.01172120f;
+
+    float x_sq = x * x;
+    return x * (a1 + x_sq * (a3 + x_sq * (a5 + x_sq * (a7 + x_sq * (a9 + x_sq * a11)))));
+}
+
+float jtan2(float y, float x)
+{
+    bool swap = std::fabs(x) < std::fabs(y);
+    float atan_input = (swap ? x : y) / (swap ? y : x);
+
+    // Approximate atan
+    float res = jtan_scalar_approx(atan_input);
+
+    // If swapped, adjust atan output
+    res = swap ? (atan_input >= 0.0f ? M_PI_2 : -M_PI_2) - res : res;
+    // Adjust quadrants
+    if      (x >= 0.0f && y >= 0.0f) {}                     // 1st quadrant
+    else if (x <  0.0f && y >= 0.0f) { res =  M_PI + res; } // 2nd quadrant
+    else if (x <  0.0f && y <  0.0f) { res = -M_PI + res; } // 3rd quadrant
+    else if (x >= 0.0f && y <  0.0f) {}                     // 4th quadrant
+
+    // Store result
+    return res;
+}
+
 Agent::Agent(const toml::table& config, b2World* world)
 {
     b2BodyDef body_def;
@@ -267,7 +301,8 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
             if (x_j == 0 && y_i == 0) {
                 continue;
             }
-            beta = std::atan2(y_i, x_j);
+            //beta = std::atan2(y_i, x_j);
+            beta = jtan2(y_i, x_j);
             while (beta < 0.0) {
                 beta += 2 * M_PI;
             }
