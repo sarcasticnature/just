@@ -42,7 +42,7 @@ theta = 0.0
 [[agents]]
 name = "jerry"
 type = "vfh"
-loging = true
+logging = true
 grid = { width = 1000, height = 1000 }
 sensor = { count = 24, range = 25.0 }
 goal = { x = 25.0, y = 10.0 }
