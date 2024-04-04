@@ -180,18 +180,18 @@ void VFHAgent::Logger::log_polar_histogram(const std::array<float, K>& polar_his
 {
     auto dataset = file_->getDataSet("/vfh_agent/polar_histogram");
     auto dims = dataset.getDimensions();
-    dims.at(1) += 1;
+    dims[1] += 1;
     dataset.resize(dims);
-    dataset.select({0, dims.at(1) - 1}, {K, 1}).write(polar_histogram);
+    dataset.select({0, dims[1] - 1}, {K, 1}).write(polar_histogram);
 }
 
 void VFHAgent::Logger::log_window(const std::array<uint8_t, WINDOW_SIZE_SQUARED>& window)
 {
     auto dataset = file_->getDataSet("/vfh_agent/window_histogram");
     auto dims = dataset.getDimensions();
-    dims.at(1) += 1;
+    dims[1] += 1;
     dataset.resize(dims);
-    dataset.select({0, dims.at(1) - 1}, {WINDOW_SIZE_SQUARED, 1}).write(window);
+    dataset.select({0, dims[1] - 1}, {WINDOW_SIZE_SQUARED, 1}).write(window);
 }
 
 void VFHAgent::Logger::log_full_grid(const HistogramGrid& grid)
@@ -207,10 +207,10 @@ void VFHAgent::Logger::log_motion(float angle, float speed, float x, float y)
 
     auto dataset = file_->getDataSet("/vfh_agent/packed_motion");
     auto dims = dataset.getDimensions();
-    dims.at(1) += 1;
+    dims[1] += 1;
     dataset.resize(dims);
     std::array<float, 4> packed{angle, speed, x, y};
-    dataset.select({0, dims.at(1) - 1}, {4, 1}).write(packed);
+    dataset.select({0, dims[1] - 1}, {4, 1}).write(packed);
     ++steering_idx_;
 }
 
@@ -313,7 +313,7 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
             if (sector_idx >= K) {
                 sector_idx -= K;
             }
-            sectors.at(sector_idx) += m;
+            sectors[sector_idx] += m;
         }
     }
 
@@ -333,10 +333,10 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
 
             // Slight difference from the paper here:
             // I think there's a typo/error in the original publicaion (equation 5)
-            h_prime += sectors.at(idx) * (1 + L - std::abs(l));
+            h_prime += sectors[idx] * (1 + L - std::abs(l));
         }
         h_prime /= 2 * L + 1;
-        smoothed_sectors.at(i) = h_prime;
+        smoothed_sectors[i] = h_prime;
     }
 
     return { smoothed_sectors };
@@ -356,7 +356,7 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
     }
 
     size_t heading;    // sector of the output steering angle
-    bool target_in_valley = polar_histogram.at(k_target) <= valley_threshold_;
+    bool target_in_valley = polar_histogram[k_target] <= valley_threshold_;
 
     if (target_in_valley) {
         heading = k_target;
@@ -369,7 +369,7 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
         // Find the left edge of the peak (exclusive)
         do {
             l = l != 0 ? l - 1 : K - 1;
-        } while (polar_histogram.at(l) > valley_threshold_ && l != k_target);
+        } while (polar_histogram[l] > valley_threshold_ && l != k_target);
 
         if (l == k_target) {
             // The only way this can happen is if *all* sectors are above the threshold.
@@ -382,7 +382,7 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
         // Find the right edge of the peak (exclusive)
         do {
             r = r != K - 1 ? r + 1 : 0;
-        } while (polar_histogram.at(r) > valley_threshold_);
+        } while (polar_histogram[r] > valley_threshold_);
 
         size_t distance_l = l <= k_target ? k_target - l : k_target + K - l;
         size_t distance_r = r >= k_target ? r - k_target : r + K - k_target;
@@ -393,7 +393,7 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
 
             do {
                 k_f = k_f != 0 ? k_f - 1 : K - 1;
-            } while (polar_histogram.at(k_f) <= valley_threshold_);
+            } while (polar_histogram[k_f] <= valley_threshold_);
 
             k_f = k_f != K - 1 ? k_f + 1 : 0;
 
@@ -419,7 +419,7 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
 
             do {
                 k_f = k_f != K - 1 ? k_f + 1 : 0;
-            } while (polar_histogram.at(k_f) <= valley_threshold_);
+            } while (polar_histogram[k_f] <= valley_threshold_);
 
             k_f = k_f != 0 ? k_f - 1 : K - 1;
 
@@ -446,7 +446,7 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
     //
     // TODO: determine emperically?
 
-    float v = v_max_ * (1 - polar_histogram.at(heading) / (valley_threshold_ * 1.1));
+    float v = v_max_ * (1 - polar_histogram[heading] / (valley_threshold_ * 1.1));
 
     return {heading * ALPHA, v};
 }

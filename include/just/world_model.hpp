@@ -84,7 +84,7 @@ std::optional<std::array<uint8_t, W * H>> HistogramGrid::subgrid(int x, int y) c
     size_t idx = 0;
     for (int y = sub_y_min; y <= sub_y_max; ++y) {
         for (int x = sub_x_min; x <= sub_x_max; ++x) {
-            subarray.at(idx) = unsafe_at(x, y);
+            subarray[idx] = unsafe_at(x, y);
             ++idx;
         }
     }

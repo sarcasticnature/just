@@ -85,7 +85,7 @@ private:
 
         // NOTE: no bounds checking is done and an exception may be thrown
         uint8_t at(int x, int y) {
-            return arr_.at(y * WINDOW_SIZE + x);
+            return arr_[y * WINDOW_SIZE + x];
         }
     private:
         std::array<uint8_t, WINDOW_SIZE_SQUARED> arr_;

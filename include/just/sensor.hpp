@@ -25,7 +25,7 @@ public:
 
     float max_range()
     {
-        return beams_.at(0).local_endpoint.x;
+        return beams_[0].local_endpoint.x;
     }
 
 private:

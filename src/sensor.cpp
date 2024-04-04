@@ -21,14 +21,14 @@ UltrasonicArray::UltrasonicArray(unsigned sensor_cnt, float max_range, b2Body* b
         beam.local_endpoint.x = std::cos(beam.relative_angle) * max_range;
         beam.local_endpoint.y = std::sin(beam.relative_angle) * max_range;
 
-        beams_.at(i) = beam;
+        beams_[i] = beam;
     }
 }
 
 UltrasonicArray::SensorReading UltrasonicArray::sense_one()
 {
     SensorReading reading;
-    const Beam& beam = beams_.at(active_beam_idx_);
+    const Beam& beam = beams_[active_beam_idx_];
     active_beam_idx_ = (active_beam_idx_ + 1) % beams_.size();
 
     b2Vec2 world_endpoint = body_->GetWorldPoint(beam.local_endpoint);
@@ -48,7 +48,7 @@ std::vector<UltrasonicArray::SensorReading> UltrasonicArray::sense_all()
     std::vector<SensorReading> readings;
     readings.resize(beams_.size());
     for (unsigned i = 0; i < beams_.size(); ++i) {
-        readings.at(i) = sense_one();
+        readings[i] = sense_one();
     }
     return readings;
 }
@@ -102,8 +102,8 @@ TEST_CASE("UltrasonicArray sensor tests") {
 
         auto reading_vec = sensor.sense_all();
         REQUIRE(reading_vec.size() == 1);
-        REQUIRE(reading_vec.at(0).angle == 0.0);
-        REQUIRE(reading_vec.at(0).distance == -1.0);
+        REQUIRE(reading_vec[0].angle == 0.0);
+        REQUIRE(reading_vec[0].distance == -1.0);
     }
 
     SUBCASE("Multiple sensors") {
@@ -119,8 +119,8 @@ TEST_CASE("UltrasonicArray sensor tests") {
         auto reading_vec = sensor.sense_all();
         REQUIRE(reading_vec.size() == 10);
         for (int i = 0; i < 10; ++i) {
-            REQUIRE(reading_vec.at(i).angle == doctest::Approx(i * 2.0 * M_PI / 10.0));
-            REQUIRE(reading_vec.at(i).distance == -1.0);
+            REQUIRE(reading_vec[i].angle == doctest::Approx(i * 2.0 * M_PI / 10.0));
+            REQUIRE(reading_vec[i].distance == -1.0);
         }
     }
 
