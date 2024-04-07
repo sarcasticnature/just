@@ -1,4 +1,4 @@
-#!/bin/env python3
+#!/usr/bin/env python3
 """Script for creating an animation from a JUST VFH agent log file."""
 
 import argparse
