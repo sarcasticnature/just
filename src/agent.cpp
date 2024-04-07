@@ -91,7 +91,7 @@ VFHAgent::VFHAgent(const toml::table& config, b2World* world)
       v_max_(config["speed"].value_or(1.0))
 {
     if (config["logging"].value_or(true)) {
-        std::string filename = "/tmp/just/" + *config["name"].value<std::string>() + "/foo.h5";
+        std::string filename = "/tmp/just/" + *config["name"].value<std::string>() + "/log.h5";
         logger_ = std::make_unique<Logger>(filename, grid_.height() * grid_.width());
     }
     goal_ = {*config["goal"]["x"].value<float>(), *config["goal"]["y"].value<float>()};
