@@ -7,7 +7,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wno-missing-fie
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(NOT CMAKE_BUILD_TYPE)
-  set(CMAKE_BUILD_TYPE "RelWithDeb")
+    #set(CMAKE_BUILD_TYPE "RelWithDeb")
+    set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
 option(BOX2D_BUILD_TESTBED OFF)
@@ -20,7 +21,7 @@ set(FETCHCONTENT_QUIET FALSE)
 FetchContent_Declare(
 	box2d
 	GIT_REPOSITORY https://github.com/erincatto/box2d.git
-	GIT_TAG main
+	GIT_TAG v2.4.2
 	GIT_SHALLOW TRUE
 	GIT_PROGRESS TRUE
 )
@@ -57,11 +58,22 @@ set(HIGHFIVE_BUILD_DOCS OFF)
 
 FetchContent_Declare(
   HighFive
-    GIT_REPOSITORY https://github.com/BlueBrain/HighFive.git
-    GIT_TAG v2.9.0
+    GIT_REPOSITORY https://github.com/highfive-devs/highfive.git
+    #GIT_REPOSITORY https://github.com/BlueBrain/HighFive.git
+    GIT_TAG v3.2.0
+    #GIT_TAG v2.9.0
 	GIT_SHALLOW TRUE
 )
 FetchContent_MakeAvailable(HighFive)
+
+FetchContent_Declare(
+    tracy
+    GIT_REPOSITORY https://github.com/wolfpld/tracy.git
+    GIT_TAG v0.13.0
+    GIT_SHALLOW TRUE
+    GIT_PROGRESS TRUE
+)
+FetchContent_MakeAvailable(tracy)
 
 option(JUST_BUILD_TESTS "whether or not to build the tests" ON)
 
@@ -82,8 +94,8 @@ set(just_deps
 )
 
 add_library(just ${just_srcs})
-target_compile_definitions(just PUBLIC DOCTEST_CONFIG_DISABLE)
-target_link_libraries(just PRIVATE ${just_deps})
+target_compile_definitions(just PUBLIC DOCTEST_CONFIG_DISABLE TRACY_ENABLE)
+target_link_libraries(just PRIVATE ${just_deps} PUBLIC TracyClient)
 
 add_executable(demo src/demo.cpp)
 target_link_libraries(demo PRIVATE just ${just_deps})

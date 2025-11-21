@@ -103,7 +103,7 @@ VFHAgent::Logger::Logger(const std::string& filename, unsigned grid_size)
     std::filesystem::path path(filename);
     std::filesystem::create_directories(path.parent_path());
 
-    unsigned file_opts = HighFive::File::OpenOrCreate | HighFive::File::Truncate;
+    auto file_opts = HighFive::File::OpenOrCreate | HighFive::File::Truncate;
     file_ = std::make_unique<HighFive::File>(filename, file_opts);
 
     // TODO: remove hardcoding
