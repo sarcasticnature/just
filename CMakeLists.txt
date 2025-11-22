@@ -7,8 +7,8 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Wall -Wextra -pedantic -Wno-missing-fie
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 if(NOT CMAKE_BUILD_TYPE)
-    #set(CMAKE_BUILD_TYPE "RelWithDeb")
-    set(CMAKE_BUILD_TYPE "Debug")
+    set(CMAKE_BUILD_TYPE "RelWithDeb")
+    # set(CMAKE_BUILD_TYPE "Debug")
 endif()
 
 option(BOX2D_BUILD_TESTBED OFF)

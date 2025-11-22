@@ -92,6 +92,7 @@ VFHAgent::VFHAgent(const toml::table& config, b2World* world)
       valley_threshold_(*config["valley_threshold"].value<float>()),
       v_max_(config["speed"].value_or(1.0))
 {
+    generate_tables();
     if (config["logging"].value_or(true)) {
         std::string filename = "/tmp/just/" + *config["name"].value<std::string>() + "/log.h5";
         logger_ = std::make_unique<Logger>(filename, grid_.height() * grid_.width());
@@ -272,12 +273,12 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
             if (x_j == 0 && y_i == 0) {
                 continue;
             }
-            beta = std::atan2(y_i, x_j);
+            beta = atan2_window(i, j);
             while (beta < 0.0) {
                 beta += 2 * M_PI;
             }
             cv = static_cast<float>(window.at(j,i));
-            d = std::sqrt(x_j * x_j + y_i * y_i);
+            d = dist_window(i, j);
             m = cv * cv * (A - B * d);
             sector_idx = std::lround(beta / ALPHA);
             if (sector_idx >= K) {
@@ -420,6 +421,31 @@ VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>&
     float v = v_max_ * (1 - polar_histogram.at(heading) / (valley_threshold_ * 1.1));
 
     return {heading * ALPHA, v};
+}
+
+void VFHAgent::generate_tables()
+{
+    int y, x;
+    int offset = WINDOW_SIZE % 2 ? 0 : 1;
+    for (size_t i = 0; i < WINDOW_SIZE; ++i) {
+        y = offset + i - (WINDOW_SIZE / 2);
+        for (size_t j = 0; j < WINDOW_SIZE; ++j) {
+            x = offset + j - (WINDOW_SIZE / 2);
+            atan2_table_[i][j] = std::atan2(y, x);
+            dist_table_[i][j] = std::sqrt(x * x + y * y);
+        }
+    }
+
+}
+
+inline double VFHAgent::atan2_window(size_t i, size_t j)
+{
+    return atan2_table_[i][j];
+}
+
+inline double VFHAgent::dist_window(size_t i, size_t j)
+{
+    return dist_table_[i][j];
 }
 
 } // namespace just

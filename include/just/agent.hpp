@@ -116,10 +116,15 @@ private:
     b2Vec2 goal_;
     float valley_threshold_;
     float v_max_;
+    double atan2_table_[WINDOW_SIZE][WINDOW_SIZE]{};
+    double dist_table_[WINDOW_SIZE][WINDOW_SIZE]{};
 
     void sense();
     std::optional<std::array<float, K>> create_polar_histogram();
     SteeringCommand compute_steering(const std::array<float, K>& polar_histogram);
+    void generate_tables();
+    double atan2_window(size_t y, size_t x);
+    double dist_window(size_t i, size_t j);
 };
 
 } // namespace just

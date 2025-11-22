@@ -3,6 +3,7 @@
 #include <memory>
 
 #include "doctest/doctest.h"
+#include "tracy/Tracy.hpp"
 
 #include "just/sensor.hpp"
 
