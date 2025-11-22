@@ -27,6 +27,7 @@ UltrasonicArray::UltrasonicArray(unsigned sensor_cnt, float max_range, b2Body* b
 
 UltrasonicArray::SensorReading UltrasonicArray::sense_one()
 {
+    ZoneScoped;
     SensorReading reading;
     const Beam& beam = beams_.at(active_beam_idx_);
     active_beam_idx_ = (active_beam_idx_ + 1) % beams_.size();

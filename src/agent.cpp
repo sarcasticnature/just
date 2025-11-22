@@ -2,6 +2,8 @@
 #include <exception>
 #include <filesystem>
 
+#include "tracy/Tracy.hpp"
+
 #include "just/agent.hpp"
 
 namespace just
@@ -182,6 +184,7 @@ void VFHAgent::Logger::log_motion(float angle, float speed, float x, float y)
 
 void VFHAgent::step(float delta_t)
 {
+    ZoneScoped;
     // TODO: use delta_t to simulate firing the "ultrasonic sensors" in series at a fixed interval,
     // to make the simulation more 'realistic'.
     // This mimics the real deal more closely, as crosstalk prevents firing all sensors at the same
@@ -221,6 +224,7 @@ void VFHAgent::step(float delta_t)
 
 void VFHAgent::sense()
 {
+    ZoneScoped;
     auto sensor_readings = sensor_.sense_all();
 
     b2Vec2 position = body_->GetPosition();
@@ -238,6 +242,7 @@ void VFHAgent::sense()
 
 std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
 {
+    ZoneScoped;
     b2Vec2 position = body_->GetPosition();
     int x = std::lround(position.x);
     int y = std::lround(position.y);
@@ -309,6 +314,7 @@ std::optional<std::array<float, VFHAgent::K>> VFHAgent::create_polar_histogram()
 
 VFHAgent::SteeringCommand VFHAgent::compute_steering(const std::array<float, K>& polar_histogram)
 {
+    ZoneScoped;
     // Get the target sector
     b2Vec2 goal_local = body_->GetLocalPoint(goal_);
     float goal_theta = std::atan2(goal_local.y, goal_local.x);

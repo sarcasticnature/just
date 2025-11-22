@@ -66,18 +66,11 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(HighFive)
 
-FetchContent_Declare(
-    tracy
-    GIT_REPOSITORY https://github.com/wolfpld/tracy.git
-    GIT_TAG v0.13.0
-    GIT_SHALLOW TRUE
-    GIT_PROGRESS TRUE
-)
-FetchContent_MakeAvailable(tracy)
+add_subdirectory(thirdparty/tracy)
 
 option(JUST_BUILD_TESTS "whether or not to build the tests" ON)
 
-include_directories(include)
+include_directories(include thirdparty/tracy/public)
 
 set(just_srcs
     src/world_model.cpp
@@ -96,9 +89,13 @@ set(just_deps
 add_library(just ${just_srcs})
 target_compile_definitions(just PUBLIC DOCTEST_CONFIG_DISABLE TRACY_ENABLE)
 target_link_libraries(just PRIVATE ${just_deps} PUBLIC TracyClient)
+# target_compile_definitions(just PUBLIC DOCTEST_CONFIG_DISABLE)
+# target_link_libraries(just PRIVATE ${just_deps})
 
 add_executable(demo src/demo.cpp)
+target_compile_definitions(demo PUBLIC TRACY_ENABLE)
 target_link_libraries(demo PRIVATE just ${just_deps})
+
 
 if(JUST_BUILD_TESTS)
     enable_testing()

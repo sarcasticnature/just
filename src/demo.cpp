@@ -14,7 +14,7 @@
 #include "just/world_model.hpp"
 #include "just/visualization.hpp"
 
-//const char* const k_frame_name = "frame";
+const char* const k_frame_name = "frame";
 
 std::unique_ptr<just::Visualization> viz_factory(const toml::table& config,
                                                  const just::Visualizer& visualizer)
@@ -188,7 +188,6 @@ int main(int argc, char** argv)
         world->Step(delta, 10, 8);
 
         visualizer.begin_drawing();
-        //FrameMarkStart(k_frame_name);
 
         const char* txt = "Hello Just";
         int txt_width = MeasureText(txt, 36);
@@ -202,6 +201,8 @@ int main(int argc, char** argv)
             visualizer.draw_viz(x, y, 0.0, *viz_ptr);
         }
 
+        FrameMarkStart(k_frame_name);
+
         for (const auto& [agent_ptr, viz_ptr] : agent_pairs) {
             const auto body = agent_ptr->get_body();
 
@@ -212,8 +213,8 @@ int main(int argc, char** argv)
             agent_ptr->step(delta);
         }
 
-        //FrameMarkEnd(k_frame_name);
-        FrameMark;
+        FrameMarkEnd(k_frame_name);
+        //FrameMark;
         visualizer.end_drawing();
     }
 
